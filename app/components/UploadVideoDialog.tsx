@@ -76,51 +76,55 @@ export const UploadVideoDialog = ({ open, onOpenChange, isPaid }: UploadVideoDia
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <Label htmlFor="title">Video Title</Label>
+                        <Label htmlFor="title" className="font-roboto font-bold text-green-600 text-base">Video Title</Label>
                         <Input
                             id="title"
                             value={formData.title}
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, title: e.target.value })}
                             placeholder="Enter video title"
                             required
+                            className="font-roboto border-green-500 focus:border-green-600 focus:ring-green-500"
                         />
                     </div>
 
                     <div>
-                        <Label htmlFor="youtubeUrl">YouTube URL</Label>
+                        <Label htmlFor="youtubeUrl" className="font-roboto font-bold text-green-600 text-base">YouTube URL</Label>
                         <Input
                             id="youtubeUrl"
                             value={formData.youtubeUrl}
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, youtubeUrl: e.target.value })}
                             placeholder="https://www.youtube.com/watch?v=..."
                             required
+                            className="font-roboto border-green-500 focus:border-green-600 focus:ring-green-500"
                         />
                     </div>
 
                     <div>
-                        <Label htmlFor="description">Description (Optional)</Label>
+                        <Label htmlFor="description" className="font-roboto font-bold text-green-600 text-base">Description (Optional)</Label>
                         <Textarea
                             id="description"
                             value={formData.description}
                             onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData({ ...formData, description: e.target.value })}
                             placeholder="Enter video description"
                             rows={3}
+                            className="font-roboto border-green-500 focus:border-green-600 focus:ring-green-500"
                         />
                     </div>
 
                     <div>
-                        <Label htmlFor="thumbnailUrl">Custom Thumbnail URL (Optional)</Label>
+                        <Label htmlFor="thumbnailUrl" className="font-roboto font-bold text-green-600 text-base">Custom Thumbnail URL (Optional)</Label>
                         <Input
                             id="thumbnailUrl"
                             value={formData.thumbnailUrl}
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, thumbnailUrl: e.target.value })}
                             placeholder="https://..."
+                            className="font-roboto border-green-500 focus:border-green-600 focus:ring-green-500"
                         />
                     </div>
 
                     {isPaid && (
                         <div>
-                            <Label htmlFor="solPrice">Price (SOL)</Label>
+                            <Label htmlFor="solPrice" className="font-roboto font-bold text-green-600 text-base">Price (SOL)</Label>
                             <Input
                                 id="solPrice"
                                 type="number"
@@ -130,15 +134,25 @@ export const UploadVideoDialog = ({ open, onOpenChange, isPaid }: UploadVideoDia
                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, solPrice: e.target.value })}
                                 placeholder="0.00"
                                 required
+                                className="font-roboto border-green-500 focus:border-green-600 focus:ring-green-500"
                             />
                         </div>
                     )}
 
                     <div className="flex gap-2 justify-end">
-                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => onOpenChange(false)}
+                            className="border border-red-500 hover:border-red-600 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-roboto font-bold px-6 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                        >
                             Cancel
                         </Button>
-                        <Button type="submit" disabled={loading}>
+                        <Button
+                            type="submit"
+                            disabled={loading}
+                            className="border border-green-500 hover:border-green-600 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-roboto font-bold px-6 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                        >
                             {loading ? 'Uploading...' : 'Submit'}
                         </Button>
                     </div>
