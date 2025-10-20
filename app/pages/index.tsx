@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/tabs';
 import { PhantomWalletButton } from '@/app/components/PhantomWalletButton';
 import { CreateVideoButton } from '@/app/components/CreateVideoButton';
@@ -67,23 +68,47 @@ const Index = () => {
     const paidVideos = videos.filter(v => v.is_paid);
 
     return (
-        <div className="min-h-screen bg-background">
-            <header className="border-b sticky top-0 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 z-50">
-                <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-                    <h1 className="text-2xl font-bold">VideoHub</h1>
+        <div className="min-h-screen">
+            <div className="border-b border-0 sticky backdrop-blur">
+                <div className="w-full px-4 py-4 flex justify-between items-center">
                     <div className="flex items-center gap-3">
+                        <Image
+                            src="/Galaxie1.png"
+                            alt="Galaxie Logo"
+                            width={40}
+                            height={40}
+                            className="rounded-lg"
+                        />
+                        <h1 className="text-base font-roboto font-bold md:text-xl">Galaxie</h1>
+                    </div>
+                    <div className="flex items-center gap-2">
                         {walletAddress && <CreateVideoButton />}
                         <PhantomWalletButton />
                     </div>
                 </div>
-            </header>
+            </div>
 
             <main className="container mx-auto px-4 py-6">
                 <Tabs defaultValue="all" className="w-full">
-                    <TabsList className="grid w-full max-w-md grid-cols-3 mb-6">
-                        <TabsTrigger value="all">All Videos</TabsTrigger>
-                        <TabsTrigger value="live">Live</TabsTrigger>
-                        <TabsTrigger value="paid">Paid</TabsTrigger>
+                    <TabsList className="grid w-auto max-w-none grid-cols-3 mb-6 bg-transparent justify-start">
+                        <TabsTrigger
+                            value="all"
+                            className="data-[state=active]:text-green-600 data-[state=active]:border-b-2 data-[state=active]:border-green-500 data-[state=active]:bg-transparent font-roboto font-bold text-base"
+                        >
+                            All Videos
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="live"
+                            className="data-[state=active]:text-green-600 data-[state=active]:border-b-2 data-[state=active]:border-green-500 data-[state=active]:bg-transparent font-roboto font-bold text-base"
+                        >
+                            Live
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="paid"
+                            className="data-[state=active]:text-green-600 data-[state=active]:border-b-2 data-[state=active]:border-green-500 data-[state=active]:bg-transparent font-roboto font-bold text-base"
+                        >
+                            Paid
+                        </TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="all">
