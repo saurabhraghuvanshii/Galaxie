@@ -3,6 +3,7 @@
 import { Button } from '@/app/components/ui/button';
 import { useWallet } from '@/app/contexts/WalletContext';
 import { useRouter } from 'next/navigation';
+import { ChevronDown } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -38,13 +39,14 @@ export const PhantomWalletButton = () => {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="gap-2 border-2 border-green-500 hover:border-green-600 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-sm text-white font-roboto font-bold px-6 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                <Button variant="outline" className="gap-2 border border-green-500 hover:border-green-600 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-sm text-white font-roboto font-bold px-6 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                     <img
                         src="Phantom-Icon_App.svg"
                         alt="Phantom"
                         className="w-5 h-5"
                     />
                     {formatAddress(walletAddress)}
+                    <ChevronDown className="w-4 h-4" />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
