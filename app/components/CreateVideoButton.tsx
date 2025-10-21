@@ -31,8 +31,9 @@ export const CreateVideoButton = () => {
         <>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button size="icon" className="rounded-full h-12 w-12 hover:bg-gray-800 cursor-pointer">
+                    <Button className="rounded-full h-10 px-4 bg-green-900 hover:bg-green-800 cursor-pointer flex items-center gap-2">
                         <Plus className="h-6 w-6" />
+                        <span className="font-roboto font-bold text-sm">Create</span>
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">

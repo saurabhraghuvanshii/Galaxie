@@ -72,19 +72,19 @@ const Index = () => {
                     <TabsList className="grid w-auto max-w-none grid-cols-3 mb-6 bg-transparent justify-start">
                         <TabsTrigger
                             value="all"
-                            className="data-[state=active]:text-green-600 data-[state=active]:border-b-2 data-[state=active]:border-green-500 data-[state=active]:bg-transparent font-roboto font-bold text-base"
+                            className="data-[state=active]:text-green-600 data-[state=active]:border-b-2 data-[state=active]:border-green-500 data-[state=active]:bg-transparent font-roboto font-bold text-base cursor-pointer"
                         >
                             All Videos
                         </TabsTrigger>
                         <TabsTrigger
                             value="paid"
-                            className="data-[state=active]:text-green-600 data-[state=active]:border-b-2 data-[state=active]:border-green-500 data-[state=active]:bg-transparent font-roboto font-bold text-base"
+                            className="data-[state=active]:text-green-600 data-[state=active]:border-b-2 data-[state=active]:border-green-500 data-[state=active]:bg-transparent font-roboto font-bold text-base cursor-pointer"
                         >
                             Paid
                         </TabsTrigger>
                         <TabsTrigger
                             value="live"
-                            className="data-[state=active]:text-green-600 data-[state=active]:border-b-2 data-[state=active]:border-green-500 data-[state=active]:bg-transparent font-roboto font-bold text-base"
+                            className="data-[state=active]:text-green-600 data-[state=active]:border-b-2 data-[state=active]:border-green-500 data-[state=active]:bg-transparent font-roboto font-bold text-base cursor-pointer"
                         >
                             Live
                         </TabsTrigger>
@@ -93,14 +93,14 @@ const Index = () => {
                     <TabsContent value="all">
                         {loading ? (
                             <div className="text-center py-12">
-                                <p className="text-muted-foreground">Loading videos...</p>
+                                <p className="font-roboto font-bold text-green-600">Loading videos...</p>
                             </div>
                         ) : allVideos.length === 0 ? (
                             <div className="text-center py-12">
-                                <p className="text-muted-foreground">No videos available yet</p>
+                                <p className="font-roboto font-bold text-green-600">No videos available yet</p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pt-4">
                                 {allVideos.map((video) => (
                                     <VideoCard
                                         key={video.id}
@@ -122,14 +122,14 @@ const Index = () => {
                     <TabsContent value="live">
                         {loading ? (
                             <div className="text-center py-12">
-                                <p className="text-muted-foreground">Loading live videos...</p>
+                                <p className="font-roboto font-bold text-green-600">Loading live videos...</p>
                             </div>
                         ) : liveVideos.length === 0 ? (
                             <div className="text-center py-12">
-                                <p className="text-muted-foreground">No live videos at the moment</p>
+                                <p className="font-roboto font-bold text-green-600">Future updates if I have money to implement this feature. Thanks for your understanding</p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pt-4">
                                 {liveVideos.map((video) => (
                                     <VideoCard
                                         key={video.id}
@@ -151,14 +151,14 @@ const Index = () => {
                     <TabsContent value="paid">
                         {loading ? (
                             <div className="text-center py-12">
-                                <p className="text-muted-foreground">Loading paid videos...</p>
+                                <p className="font-roboto font-bold text-green-600">Loading paid videos...</p>
                             </div>
                         ) : paidVideos.length === 0 ? (
                             <div className="text-center py-12">
-                                <p className="text-muted-foreground">No paid videos available yet</p>
+                                <p className="font-roboto font-bold text-green-600">No paid videos available yet</p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pt-4">
                                 {paidVideos.map((video) => (
                                     <VideoCard
                                         key={video.id}
