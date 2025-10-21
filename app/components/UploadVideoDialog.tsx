@@ -103,7 +103,10 @@ export const UploadVideoDialog = ({ open, onOpenChange, isPaid }: UploadVideoDia
                     </div>
 
                     <div>
-                        <Label htmlFor="youtubeUrl" className="font-roboto font-bold text-green-600 text-base">YouTube URL</Label>
+                        <Label htmlFor="youtubeUrl" className="font-roboto font-bold text-green-600 text-base flex items-center gap-2">
+                            <img src="/youtube.svg" alt="YouTube" className="w-4 h-4" />
+                            YouTube URL
+                        </Label>
                         <Input
                             id="youtubeUrl"
                             value={formData.youtubeUrl}
@@ -159,14 +162,14 @@ export const UploadVideoDialog = ({ open, onOpenChange, isPaid }: UploadVideoDia
                             type="button"
                             variant="outline"
                             onClick={() => onOpenChange(false)}
-                            className="border border-red-500 hover:border-red-600 bg-linear-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-roboto font-bold px-6 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                            className="border border-red-500 hover:border-red-600 bg-linear-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-roboto font-bold px-6 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer"
                         >
                             Cancel
                         </Button>
                         <Button
                             type="submit"
                             disabled={loading}
-                            className="border border-green-500 hover:border-green-600 bg-linear-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-roboto font-bold px-6 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                            className="border border-green-500 hover:border-green-600 bg-linear-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-roboto font-bold px-6 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer"
                         >
                             {loading ? 'Uploading...' : 'Submit'}
                         </Button>

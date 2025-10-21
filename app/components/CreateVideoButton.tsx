@@ -31,15 +31,17 @@ export const CreateVideoButton = () => {
         <>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button size="icon" className="rounded-full h-12 w-12">
+                    <Button size="icon" className="rounded-full h-12 w-12 hover:bg-gray-800 cursor-pointer">
                         <Plus className="h-6 w-6" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleUploadClick(false)}>
+                    <DropdownMenuItem onClick={() => handleUploadClick(false)} className="flex items-center gap-2 hover:bg-gray-800 cursor-pointer">
+                        <img src="/youtube.svg" alt="YouTube" className="w-4 h-4" />
                         Upload Video
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleUploadClick(true)}>
+                    <DropdownMenuItem onClick={() => handleUploadClick(true)} className="flex items-center gap-2 hover:bg-gray-800 cursor-pointer">
+                        <img src="/youtube.svg" alt="YouTube" className="w-4 h-4" />
                         Upload Paid Video
                     </DropdownMenuItem>
                 </DropdownMenuContent>

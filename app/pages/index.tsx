@@ -12,6 +12,7 @@ interface Video {
     id: string;
     youtube_url: string;
     title: string;
+    description: string | null;
     thumbnail_url: string | null;
     sol_price: number | null;
     is_paid: boolean | null;
@@ -106,6 +107,7 @@ const Index = () => {
                                         id={video.id}
                                         youtubeUrl={video.youtube_url}
                                         title={video.title}
+                                        description={video.description || undefined}
                                         thumbnailUrl={video.thumbnail_url || undefined}
                                         solPrice={video.sol_price || 0}
                                         isPaid={video.is_paid || false}
@@ -134,6 +136,7 @@ const Index = () => {
                                         id={video.id}
                                         youtubeUrl={video.youtube_url}
                                         title={video.title}
+                                        description={video.description || undefined}
                                         thumbnailUrl={video.thumbnail_url || undefined}
                                         solPrice={video.sol_price || 0}
                                         isPaid={video.is_paid || false}
@@ -162,6 +165,7 @@ const Index = () => {
                                         id={video.id}
                                         youtubeUrl={video.youtube_url}
                                         title={video.title}
+                                        description={video.description || undefined}
                                         thumbnailUrl={video.thumbnail_url || undefined}
                                         solPrice={video.sol_price || 0}
                                         isPaid={video.is_paid || false}

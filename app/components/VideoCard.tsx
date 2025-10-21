@@ -6,11 +6,13 @@ import { Button } from '@/app/components/ui/button';
 import { useWallet } from '@/app/contexts/WalletContext';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface VideoCardProps {
     id: string;
     youtubeUrl: string;
     title: string;
+    description?: string;
     thumbnailUrl?: string;
     solPrice: number;
     isPaid: boolean;
@@ -22,6 +24,7 @@ interface VideoCardProps {
 export const VideoCard = ({
     youtubeUrl,
     title,
+    description,
     thumbnailUrl,
     solPrice,
     isPaid,
@@ -31,6 +34,7 @@ export const VideoCard = ({
 }: VideoCardProps) => {
     const { walletAddress: currentUserWallet } = useWallet();
     const [isPurchasing, setIsPurchasing] = useState(false);
+    const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
     // Extract YouTube video ID
     const getYoutubeId = (url: string) => {
@@ -69,46 +73,82 @@ export const VideoCard = ({
         }
     };
 
-    // Handle video play
+    // Handle video play (for paid content overlay)
     const handlePlay = () => {
-        if (canWatch) {
-            window.open(youtubeUrl, '_blank');
-        } else {
+        if (!canWatch) {
             toast.error('Please purchase this video to watch');
         }
     };
 
     return (
-        <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+        <Card className="overflow-hidden border border-green-900 hover:border-green-700 hover:shadow-lg transition-shadow">
             <div className="relative aspect-video">
-                <img
-                    src={thumbnail}
-                    alt={title}
-                    className="w-full h-full object-cover cursor-pointer"
-                    onClick={handlePlay}
-                />
+                {canWatch ? (
+                    <iframe
+                        className="w-full h-full"
+                        src={youtubeUrl.replace("watch", "embed").replace("?v=", "/")}
+                        title="YouTube video player"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerPolicy="strict-origin-when-cross-origin"
+                        allowFullScreen
+                    />
+                ) : (
+                    <>
+                        <img
+                            src={thumbnail}
+                            alt={title}
+                            className="w-full h-full object-cover cursor-pointer"
+                            onClick={handlePlay}
+                        />
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <Badge variant="secondary" className="text-lg px-4 py-2">
+                                Paid Content
+                            </Badge>
+                        </div>
+                    </>
+                )}
                 {isLive && (
                     <Badge variant="destructive" className="absolute top-2 left-2">
                         LIVE
                     </Badge>
                 )}
-                {!canWatch && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                        <Badge variant="secondary" className="text-lg px-4 py-2">
-                            Paid Content
-                        </Badge>
-                    </div>
-                )}
             </div>
             <CardContent className="p-4">
                 <h3 className="font-semibold text-sm mb-2 line-clamp-2">{title}</h3>
 
+                {/* Description */}
+                {description && (
+                    <div className="mb-3">
+                        <div className="bg-gray-800 border border-gray-700 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="flex items-start justify-between gap-2">
+                                <div className="flex-1">
+                                    <p className={`text-xs text-gray-100 leading-relaxed ${!isDescriptionExpanded ? 'line-clamp-2' : ''}`}>
+                                        {description}
+                                    </p>
+                                </div>
+                                {description.length > 100 && (
+                                    <button
+                                        onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                                        className="shrink-0 p-1 hover:bg-gray-700 rounded transition-colors"
+                                    >
+                                        {isDescriptionExpanded ? (
+                                            <ChevronUp className="w-3 h-3 text-gray-200" />
+                                        ) : (
+                                            <ChevronDown className="w-3 h-3 text-gray-200" />
+                                        )}
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Wallet Address */}
                 {walletAddress && (
-                    <div className="flex items-center gap-1 mb-2">
-                        <span className="text-xs text-muted-foreground">By:</span>
-                        <span className="text-xs font-mono bg-muted px-2 py-1 rounded">
-                            {formatWalletAddress(walletAddress)}
+                    <div className="mb-2">
+                        <span className="text-xs font-mono bg-blue-100 text-blue-800 px-2 py-1 rounded border border-blue-200">
+                            By: {formatWalletAddress(walletAddress)}
                         </span>
                     </div>
                 )}
@@ -117,9 +157,9 @@ export const VideoCard = ({
                 <div className="flex items-center justify-between gap-2">
                     {isPaid ? (
                         <>
-                            <span className="text-green-600 font-bold font-roboto">
-                                {solPrice} SOL
-                            </span>
+                            <Badge variant="outline" className="text-green-600 border-green-600">
+                                Paid
+                            </Badge>
                             {canWatch ? (
                                 <Badge variant="outline" className="text-green-600 border-green-600">
                                     {hasPurchased ? 'Purchased' : 'Your Video'}
@@ -129,7 +169,7 @@ export const VideoCard = ({
                                     size="sm"
                                     onClick={handlePurchase}
                                     disabled={isPurchasing}
-                                    className="border border-green-500 hover:border-green-600 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-roboto font-bold px-3 py-1 rounded text-xs"
+                                    className="border border-green-500 hover:border-green-600 bg-linear-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-roboto font-bold px-3 py-1 rounded text-xs cursor-pointer"
                                 >
                                     {isPurchasing ? 'Buying...' : `Buy ${solPrice} SOL`}
                                 </Button>
@@ -142,10 +182,10 @@ export const VideoCard = ({
                             </Badge>
                             <Button
                                 size="sm"
-                                onClick={handlePlay}
-                                className="border border-blue-500 hover:border-blue-600 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-roboto font-bold px-3 py-1 rounded text-xs"
+                                onClick={() => window.open(youtubeUrl, '_blank')}
+                                className="border border-blue-500 hover:border-blue-600 bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-roboto font-bold px-3 py-1 rounded text-xs cursor-pointer"
                             >
-                                Watch
+                                Open in YouTube
                             </Button>
                         </>
                     )}
