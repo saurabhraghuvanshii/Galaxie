@@ -24,7 +24,7 @@ export const PhantomWalletButton = () => {
             <Button
                 onClick={connectWallet}
                 disabled={isConnecting}
-                className="gap-2 border-2 border-purple-500 hover:border-purple-600 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-sm text-white font-roboto font-bold px-6 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                className="gap-2 border-2 border-purple-500 hover:border-purple-600 bg-linear-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-sm text-white font-roboto font-bold px-6 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
             >
                 <img
                     src="Phantom-Icon_App.svg"
@@ -39,7 +39,7 @@ export const PhantomWalletButton = () => {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="gap-2 border border-green-500 hover:border-green-600 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-sm text-white font-roboto font-bold px-6 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                <Button variant="outline" className="gap-2 border border-green-500 hover:border-green-600 bg-linear-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-sm text-white font-roboto font-bold px-6 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                     <img
                         src="Phantom-Icon_App.svg"
                         alt="Phantom"

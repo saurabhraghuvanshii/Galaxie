@@ -6,7 +6,6 @@ import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { Textarea } from '@/app/components/ui/textarea';
-import { supabase } from '@/app/integrations/supabase/client';
 import { useWallet } from '@/app/contexts/WalletContext';
 import { toast } from 'sonner';
 
@@ -38,7 +37,7 @@ export const UploadVideoDialog = ({ open, onOpenChange, isPaid }: UploadVideoDia
         setLoading(true);
 
         try {
-            const { error } = await supabase.from('videos').insert({
+            const requestData = {
                 wallet_address: walletAddress,
                 youtube_url: formData.youtubeUrl,
                 title: formData.title,
@@ -47,10 +46,25 @@ export const UploadVideoDialog = ({ open, onOpenChange, isPaid }: UploadVideoDia
                 sol_price: isPaid ? parseFloat(formData.solPrice) : 0,
                 is_paid: isPaid,
                 is_live: false
+            };
+
+            console.log('Sending video data:', requestData);
+
+            const response = await fetch('/api/videos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestData),
             });
 
-            if (error) throw error;
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to upload video');
+            }
 
+            const result = await response.json();
+            console.log('Video created successfully:', result);
             toast.success('Video uploaded successfully!');
             onOpenChange(false);
             setFormData({
@@ -62,7 +76,8 @@ export const UploadVideoDialog = ({ open, onOpenChange, isPaid }: UploadVideoDia
             });
         } catch (error) {
             console.error('Error uploading video:', error);
-            toast.error('Failed to upload video');
+            const errorMessage = error instanceof Error ? error.message : 'Failed to upload video';
+            toast.error(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -144,14 +159,14 @@ export const UploadVideoDialog = ({ open, onOpenChange, isPaid }: UploadVideoDia
                             type="button"
                             variant="outline"
                             onClick={() => onOpenChange(false)}
-                            className="border border-red-500 hover:border-red-600 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-roboto font-bold px-6 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                            className="border border-red-500 hover:border-red-600 bg-linear-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-roboto font-bold px-6 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                         >
                             Cancel
                         </Button>
                         <Button
                             type="submit"
                             disabled={loading}
-                            className="border border-green-500 hover:border-green-600 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-roboto font-bold px-6 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                            className="border border-green-500 hover:border-green-600 bg-linear-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-roboto font-bold px-6 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                         >
                             {loading ? 'Uploading...' : 'Submit'}
                         </Button>

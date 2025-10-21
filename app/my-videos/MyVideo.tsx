@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/app/components/ui/button';
 import { VideoCard } from '@/app/components/VideoCard';
-import { supabase } from '@/app/integrations/supabase/client';
 import { useWallet } from '@/app/contexts/WalletContext';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
@@ -17,6 +16,7 @@ interface Video {
     sol_price: number | null;
     is_paid: boolean | null;
     is_live: boolean | null;
+    wallet_address: string;
 }
 
 const MyVideos = () => {
@@ -37,14 +37,10 @@ const MyVideos = () => {
 
     const fetchMyVideos = async () => {
         try {
-            const { data, error } = await supabase
-                .from('videos')
-                .select('*')
-                .eq('wallet_address', walletAddress!)
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
-            setVideos(data || []);
+            const response = await fetch(`/api/videos/${walletAddress}`);
+            if (!response.ok) throw new Error('Failed to fetch videos');
+            const data = await response.json();
+            setVideos(data);
         } catch (error) {
             console.error('Error fetching videos:', error);
             toast.error('Failed to load your videos');
@@ -90,6 +86,7 @@ const MyVideos = () => {
                                 solPrice={video.sol_price || 0}
                                 isPaid={video.is_paid || false}
                                 isLive={video.is_live || false}
+                                walletAddress={video.wallet_address}
                             />
                         ))}
                     </div>

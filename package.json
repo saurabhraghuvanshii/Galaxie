@@ -5,7 +5,11 @@
 	"scripts": {
 		"dev": "next dev --turbopack",
 		"build": "next build --turbopack",
-		"start": "next start"
+		"start": "next start",
+		"db:migrate": "prisma migrate dev",
+		"db:generate": "prisma generate",
+		"db:push": "prisma db push",
+		"studio": "prisma studio"
 	},
 	"dependencies": {
 		"@hookform/resolvers": "^3.10.0",
