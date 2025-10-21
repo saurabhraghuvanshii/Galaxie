@@ -150,7 +150,7 @@ export const UploadVideoDialog = ({ open, onOpenChange, isPaid }: UploadVideoDia
                             <Input
                                 id="solPrice"
                                 type="number"
-                                step="0.0001"
+                                step="0.000001"
                                 min="0"
                                 value={formData.solPrice}
                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, solPrice: e.target.value })}

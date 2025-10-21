@@ -104,7 +104,7 @@ export const VideoCard = ({
                             referrerPolicy="strict-origin-when-cross-origin"
                             allowFullScreen
                         />
-                        <div className="absolute inset-0 bg-black/30 backdrop-blur-sm rounded-lg flex items-center justify-center cursor-pointer" onClick={handlePlay}>
+                        <div className="absolute inset-0 bg-black/20 backdrop-blur-xs rounded-lg flex items-center justify-center cursor-pointer" onClick={handlePlay}>
                             <Badge variant="secondary" className="text-lg px-4 py-2  text-white border-green-800">
                                 Paid
                             </Badge>
