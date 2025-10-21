@@ -18,16 +18,28 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
         const checkIfWalletIsConnected = async () => {
             try {
                 const { solana } = window as any;
-                if (solana?.isPhantom && solana.isConnected) {
-                    const response = await solana.connect({ onlyIfTrusted: true });
-                    setWalletAddress(response.publicKey.toString());
+                if (solana?.isPhantom) {
+                    if (solana.isConnected) {
+                        const response = await solana.connect({ onlyIfTrusted: true });
+                        setWalletAddress(response.publicKey.toString());
+                    }
                 }
             } catch (error) {
                 console.error('Error checking wallet connection:', error);
+                try {
+                    const { solana } = window as any;
+                    if (solana?.isPhantom) {
+                        const response = await solana.connect();
+                        setWalletAddress(response.publicKey.toString());
+                    }
+                } catch (reconnectError) {
+                    console.error('Error reconnecting wallet:', reconnectError);
+                }
             }
         };
 
-        checkIfWalletIsConnected();
+        // Add a small delay to ensure Phantom is loaded
+        setTimeout(checkIfWalletIsConnected, 100);
 
         const { solana } = window as any;
         if (solana?.isPhantom) {

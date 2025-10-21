@@ -74,6 +74,10 @@ export const UploadVideoDialog = ({ open, onOpenChange, isPaid }: UploadVideoDia
                 solPrice: '0',
                 thumbnailUrl: ''
             });
+
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
         } catch (error) {
             console.error('Error uploading video:', error);
             const errorMessage = error instanceof Error ? error.message : 'Failed to upload video';

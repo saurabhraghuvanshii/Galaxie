@@ -48,7 +48,7 @@ const Index = () => {
 
     return (
         <div className="min-h-screen">
-            <div className="border-b border-0 sticky backdrop-blur">
+            <div className="border-b border-0 border-green-900 sticky backdrop-blur">
                 <div className="w-full px-4 py-4 flex justify-between items-center">
                     <div className="flex items-center gap-3">
                         <Image

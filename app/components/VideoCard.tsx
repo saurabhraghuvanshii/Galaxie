@@ -85,7 +85,7 @@ export const VideoCard = ({
             <div className="relative aspect-video">
                 {canWatch ? (
                     <iframe
-                        className="w-full h-full"
+                        className="w-full h-full rounded-lg"
                         src={youtubeUrl.replace("watch", "embed").replace("?v=", "/")}
                         title="YouTube video player"
                         frameBorder="0"
@@ -95,15 +95,18 @@ export const VideoCard = ({
                     />
                 ) : (
                     <>
-                        <img
-                            src={thumbnail}
-                            alt={title}
-                            className="w-full h-full object-cover cursor-pointer"
-                            onClick={handlePlay}
+                        <iframe
+                            className="w-full h-full rounded-lg"
+                            src={youtubeUrl.replace("watch", "embed").replace("?v=", "/")}
+                            title="YouTube video player"
+                            frameBorder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            referrerPolicy="strict-origin-when-cross-origin"
+                            allowFullScreen
                         />
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                            <Badge variant="secondary" className="text-lg px-4 py-2">
-                                Paid Content
+                        <div className="absolute inset-0 bg-black/30 backdrop-blur-sm rounded-lg flex items-center justify-center cursor-pointer" onClick={handlePlay}>
+                            <Badge variant="secondary" className="text-lg px-4 py-2  text-white border-green-800">
+                                Paid
                             </Badge>
                         </div>
                     </>
