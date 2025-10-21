@@ -12,3 +12,89 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+// User model - represents wallet addresses (for future use)
+model User {
+  id             String   @id @default(cuid())
+  wallet_address String   @unique
+  username       String?
+  email          String?
+  avatar         String?
+  created_at     DateTime @default(now()) @map("created_at")
+  updated_at     DateTime @updatedAt @map("updated_at")
+
+  // Relations (for future implementation)
+  purchases Purchase[] @relation("VideoPurchaser")
+
+  @@map("users")
+}
+
+model Video {
+  id            String  @id @default(cuid())
+  title         String
+  description   String?
+  youtube_url   String
+  thumbnail_url String?
+
+  // Pricing and status
+  sol_price Float   @default(0)
+  is_paid   Boolean @default(false)
+  is_live   Boolean @default(false)
+
+  // Wallet address (direct field instead of relation for now)
+  wallet_address String
+
+  // Timestamps
+  created_at DateTime @default(now()) @map("created_at")
+  updated_at DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  purchases Purchase[] @relation("VideoPurchases")
+
+  @@map("videos")
+}
+
+// Purchase model - tracks video purchases/payments
+model Purchase {
+  id String @id @default(cuid())
+
+  // Transaction details
+  sol_amount       Float
+  transaction_hash String?
+  is_completed     Boolean @default(false)
+
+  // Timestamps
+  created_at   DateTime  @default(now()) @map("created_at")
+  completed_at DateTime? @map("completed_at")
+
+  // Relations
+  video_id String
+  video    Video  @relation("VideoPurchases", fields: [video_id], references: [id], onDelete: Cascade)
+  buyer_id String
+  buyer    User   @relation("VideoPurchaser", fields: [buyer_id], references: [id], onDelete: Cascade)
+
+  // Unique constraint to prevent duplicate purchases
+  @@unique([video_id, buyer_id])
+  @@map("purchases")
+}
+
+// Payment model - tracks SOL transfers (for analytics and verification)
+model Payment {
+  id String @id @default(cuid())
+
+  // Transaction details
+  from_address     String // Buyer's wallet address
+  to_address       String // Seller's wallet address (video owner)
+  sol_amount       Float // Amount transferred
+  transaction_hash String @unique // Blockchain transaction hash
+
+  // Status
+  status       String @default("pending") // pending, completed, failed
+  block_number Int? // Block number where transaction was confirmed
+
+  // Timestamps
+  created_at   DateTime  @default(now()) @map("created_at")
+  confirmed_at DateTime? @map("confirmed_at")
+
+  @@map("payments")
+}

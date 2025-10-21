@@ -6,7 +6,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/ta
 import { PhantomWalletButton } from '@/app/components/PhantomWalletButton';
 import { CreateVideoButton } from '@/app/components/CreateVideoButton';
 import { VideoCard } from '@/app/components/VideoCard';
-import { supabase } from '@/app/integrations/supabase/client';
 import { useWallet } from '@/app/contexts/WalletContext';
 
 interface Video {
@@ -17,6 +16,7 @@ interface Video {
     sol_price: number | null;
     is_paid: boolean | null;
     is_live: boolean | null;
+    wallet_address: string;
 }
 
 const Index = () => {
@@ -26,36 +26,14 @@ const Index = () => {
 
     useEffect(() => {
         fetchVideos();
-
-        const channel = supabase
-            .channel('videos-changes')
-            .on(
-                'postgres_changes',
-                {
-                    event: '*',
-                    schema: 'public',
-                    table: 'videos'
-                },
-                () => {
-                    fetchVideos();
-                }
-            )
-            .subscribe();
-
-        return () => {
-            supabase.removeChannel(channel);
-        };
     }, []);
 
     const fetchVideos = async () => {
         try {
-            const { data, error } = await supabase
-                .from('videos')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
-            setVideos(data || []);
+            const response = await fetch('/api/videos');
+            if (!response.ok) throw new Error('Failed to fetch videos');
+            const data = await response.json();
+            setVideos(data);
         } catch (error) {
             console.error('Error fetching videos:', error);
         } finally {
@@ -98,16 +76,16 @@ const Index = () => {
                             All Videos
                         </TabsTrigger>
                         <TabsTrigger
-                            value="live"
-                            className="data-[state=active]:text-green-600 data-[state=active]:border-b-2 data-[state=active]:border-green-500 data-[state=active]:bg-transparent font-roboto font-bold text-base"
-                        >
-                            Live
-                        </TabsTrigger>
-                        <TabsTrigger
                             value="paid"
                             className="data-[state=active]:text-green-600 data-[state=active]:border-b-2 data-[state=active]:border-green-500 data-[state=active]:bg-transparent font-roboto font-bold text-base"
                         >
                             Paid
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="live"
+                            className="data-[state=active]:text-green-600 data-[state=active]:border-b-2 data-[state=active]:border-green-500 data-[state=active]:bg-transparent font-roboto font-bold text-base"
+                        >
+                            Live
                         </TabsTrigger>
                     </TabsList>
 
@@ -132,6 +110,7 @@ const Index = () => {
                                         solPrice={video.sol_price || 0}
                                         isPaid={video.is_paid || false}
                                         isLive={video.is_live || false}
+                                        walletAddress={video.wallet_address}
                                     />
                                 ))}
                             </div>
@@ -159,6 +138,7 @@ const Index = () => {
                                         solPrice={video.sol_price || 0}
                                         isPaid={video.is_paid || false}
                                         isLive={video.is_live || false}
+                                        walletAddress={video.wallet_address}
                                     />
                                 ))}
                             </div>
@@ -186,6 +166,7 @@ const Index = () => {
                                         solPrice={video.sol_price || 0}
                                         isPaid={video.is_paid || false}
                                         isLive={video.is_live || false}
+                                        walletAddress={video.wallet_address}
                                     />
                                 ))}
                             </div>
