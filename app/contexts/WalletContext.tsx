@@ -1,5 +1,6 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface WalletContextType {
     walletAddress: string | null;
@@ -13,33 +14,16 @@ const WalletContext = createContext<WalletContextType | undefined>(undefined);
 export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
     const [walletAddress, setWalletAddress] = useState<string | null>(null);
     const [isConnecting, setIsConnecting] = useState(false);
+    const router = useRouter();
 
     useEffect(() => {
-        const checkIfWalletIsConnected = async () => {
-            try {
-                const { solana } = window as any;
-                if (solana?.isPhantom) {
-                    if (solana.isConnected) {
-                        const response = await solana.connect({ onlyIfTrusted: true });
-                        setWalletAddress(response.publicKey.toString());
-                    }
-                }
-            } catch (error) {
-                console.error('Error checking wallet connection:', error);
-                try {
-                    const { solana } = window as any;
-                    if (solana?.isPhantom) {
-                        const response = await solana.connect();
-                        setWalletAddress(response.publicKey.toString());
-                    }
-                } catch (reconnectError) {
-                    console.error('Error reconnecting wallet:', reconnectError);
-                }
-            }
-        };
+        const savedWalletAddress = localStorage.getItem('walletAddress');
+        if (savedWalletAddress) {
+            setWalletAddress(savedWalletAddress);
+        }
+    }, []);
 
-        // Add a small delay to ensure Phantom is loaded
-        setTimeout(checkIfWalletIsConnected, 100);
+    useEffect(() => {
 
         const { solana } = window as any;
         if (solana?.isPhantom) {
@@ -70,7 +54,10 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
             }
 
             const response = await solana.connect();
-            setWalletAddress(response.publicKey.toString());
+            const address = response.publicKey.toString();
+            setWalletAddress(address);
+
+            localStorage.setItem('walletAddress', address);
         } catch (error) {
             console.error('Error connecting wallet:', error);
         } finally {
@@ -83,8 +70,12 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
             const { solana } = window as any;
             if (solana?.isPhantom) {
                 await solana.disconnect();
-                setWalletAddress(null);
             }
+            setWalletAddress(null);
+
+            localStorage.removeItem('walletAddress');
+            
+            router.push('/');
         } catch (error) {
             console.error('Error disconnecting wallet:', error);
         }

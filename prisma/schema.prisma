@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,88 +7,64 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// User model - represents wallet addresses (for future use)
 model User {
-  id             String   @id @default(cuid())
-  wallet_address String   @unique
-  username       String?
-  email          String?
-  avatar         String?
-  created_at     DateTime @default(now()) @map("created_at")
-  updated_at     DateTime @updatedAt @map("updated_at")
-
-  // Relations (for future implementation)
-  purchases Purchase[] @relation("VideoPurchaser")
+  id             String     @id @default(cuid())
+  wallet_address String     @unique
+  username       String?    @unique
+  created_at     DateTime   @default(now()) @map("created_at")
+  updated_at     DateTime   @updatedAt @map("updated_at")
+  avatar_url     String?
+  bio            String?
+  display_name   String?
+  joined_date    DateTime   @default(now()) @map("joined_date")
+  purchases      Purchase[] @relation("VideoPurchaser")
 
   @@map("users")
 }
 
 model Video {
-  id            String  @id @default(cuid())
-  title         String
-  description   String?
-  youtube_url   String
-  thumbnail_url String?
-
-  // Pricing and status
-  sol_price Float   @default(0)
-  is_paid   Boolean @default(false)
-  is_live   Boolean @default(false)
-
-  // Wallet address (direct field instead of relation for now)
+  id             String     @id @default(cuid())
+  title          String
+  description    String?
+  youtube_url    String
+  thumbnail_url  String?
+  sol_price      Float      @default(0)
+  is_paid        Boolean    @default(false)
+  is_live        Boolean    @default(false)
   wallet_address String
-
-  // Timestamps
-  created_at DateTime @default(now()) @map("created_at")
-  updated_at DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  purchases Purchase[] @relation("VideoPurchases")
+  created_at     DateTime   @default(now()) @map("created_at")
+  updated_at     DateTime   @updatedAt @map("updated_at")
+  purchases      Purchase[] @relation("VideoPurchases")
 
   @@map("videos")
 }
 
-// Purchase model - tracks video purchases/payments
 model Purchase {
-  id String @id @default(cuid())
-
-  // Transaction details
+  id               String    @id @default(cuid())
   sol_amount       Float
   transaction_hash String?
-  is_completed     Boolean @default(false)
+  is_completed     Boolean   @default(false)
+  created_at       DateTime  @default(now()) @map("created_at")
+  completed_at     DateTime? @map("completed_at")
+  video_id         String
+  buyer_id         String
+  buyer            User      @relation("VideoPurchaser", fields: [buyer_id], references: [id], onDelete: Cascade)
+  video            Video     @relation("VideoPurchases", fields: [video_id], references: [id], onDelete: Cascade)
 
-  // Timestamps
-  created_at   DateTime  @default(now()) @map("created_at")
-  completed_at DateTime? @map("completed_at")
-
-  // Relations
-  video_id String
-  video    Video  @relation("VideoPurchases", fields: [video_id], references: [id], onDelete: Cascade)
-  buyer_id String
-  buyer    User   @relation("VideoPurchaser", fields: [buyer_id], references: [id], onDelete: Cascade)
-
-  // Unique constraint to prevent duplicate purchases
   @@unique([video_id, buyer_id])
   @@map("purchases")
 }
 
-// Payment model - tracks SOL transfers (for analytics and verification)
 model Payment {
-  id String @id @default(cuid())
-
-  // Transaction details
-  from_address     String // Buyer's wallet address
-  to_address       String // Seller's wallet address (video owner)
-  sol_amount       Float // Amount transferred
-  transaction_hash String @unique // Blockchain transaction hash
-
-  // Status
-  status       String @default("pending") // pending, completed, failed
-  block_number Int? // Block number where transaction was confirmed
-
-  // Timestamps
-  created_at   DateTime  @default(now()) @map("created_at")
-  confirmed_at DateTime? @map("confirmed_at")
+  id               String    @id @default(cuid())
+  from_address     String
+  to_address       String
+  sol_amount       Float
+  transaction_hash String    @unique
+  status           String    @default("pending")
+  block_number     Int?
+  created_at       DateTime  @default(now()) @map("created_at")
+  confirmed_at     DateTime? @map("confirmed_at")
 
   @@map("payments")
 }

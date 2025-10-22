@@ -4,9 +4,10 @@ import { Card, CardContent } from '@/app/components/ui/card';
 import { Badge } from '@/app/components/ui/badge';
 import { Button } from '@/app/components/ui/button';
 import { useWallet } from '@/app/contexts/WalletContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface VideoCardProps {
     id: string;
@@ -17,8 +18,8 @@ interface VideoCardProps {
     solPrice: number;
     isPaid: boolean;
     isLive: boolean;
-    walletAddress?: string; // Wallet address of the video owner
-    hasPurchased?: boolean; // Whether current user has purchased this video
+    walletAddress?: string;
+    hasPurchased?: boolean;
 }
 
 export const VideoCard = ({
@@ -33,8 +34,49 @@ export const VideoCard = ({
     hasPurchased = false
 }: VideoCardProps) => {
     const { walletAddress: currentUserWallet } = useWallet();
+    const router = useRouter();
     const [isPurchasing, setIsPurchasing] = useState(false);
     const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+    const [userInfo, setUserInfo] = useState<{
+        displayName: string;
+        username?: string;
+        isUsername: boolean;
+    } | null>(null);
+
+    // Fetch user info
+    useEffect(() => {
+        if (walletAddress) {
+            fetchUserInfo();
+        }
+    }, [walletAddress]);
+
+    const fetchUserInfo = async () => {
+        if (!walletAddress) return;
+
+        try {
+            const response = await fetch(`/api/user/profile?wallet_address=${walletAddress}`);
+            if (response.ok) {
+                const user = await response.json();
+                setUserInfo({
+                    displayName: user.username || user.display_name || `${walletAddress.slice(0, 3)}...${walletAddress.slice(-3)}`,
+                    username: user.username,
+                    isUsername: !!user.username
+                });
+            } else {
+                // Fallback to wallet address
+                setUserInfo({
+                    displayName: `${walletAddress.slice(0, 3)}...${walletAddress.slice(-3)}`,
+                    isUsername: false
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching user info:', error);
+            setUserInfo({
+                displayName: `${walletAddress.slice(0, 3)}...${walletAddress.slice(-3)}`,
+                isUsername: false
+            });
+        }
+    };
 
     // Extract YouTube video ID
     const getYoutubeId = (url: string) => {
@@ -46,12 +88,10 @@ export const VideoCard = ({
     const videoId = getYoutubeId(youtubeUrl);
     const thumbnail = thumbnailUrl || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
 
-    // Format wallet address for display
     const formatWalletAddress = (address: string) => {
         return `${address.slice(0, 4)}...${address.slice(-4)}`;
     };
 
-    // Check if user can watch the video
     const canWatch = !isPaid || hasPurchased || walletAddress === currentUserWallet;
 
     // Handle video purchase
@@ -147,12 +187,21 @@ export const VideoCard = ({
                     </div>
                 )}
 
-                {/* Wallet Address */}
-                {walletAddress && (
+                {/* User Info */}
+                {userInfo && (
                     <div className="mb-2">
-                        <span className="text-xs font-mono bg-blue-100 text-blue-800 px-2 py-1 rounded border border-blue-200">
-                            By: {formatWalletAddress(walletAddress)}
-                        </span>
+                        <button
+                            onClick={() => {
+                                if (userInfo.isUsername && userInfo.username) {
+                                    router.push(`/user/${userInfo.username}`);
+                                } else {
+                                    router.push(`/user/${walletAddress}`);
+                                }
+                            }}
+                            className="text-xs font-mono bg-blue-100 text-blue-800 px-2 py-1 rounded border border-blue-200 hover:bg-blue-200 cursor-pointer transition-colors"
+                        >
+                            By: {userInfo.displayName}
+                        </button>
                     </div>
                 )}
 
