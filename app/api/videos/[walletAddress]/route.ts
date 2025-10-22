@@ -3,10 +3,10 @@ import { getVideosByWalletAddress } from '@/app/lib/types/database';
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { walletAddress: string } }
+    { params }: { params: Promise<{ walletAddress: string }> }
 ) {
     try {
-        const { walletAddress } = params;
+        const { walletAddress } = await params;
         const videos = await getVideosByWalletAddress(walletAddress);
         return NextResponse.json(videos);
     } catch (error) {

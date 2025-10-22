@@ -75,7 +75,6 @@ const MyVideos = () => {
                         <h1 className="text-base font-roboto font-bold md:text-xl">My Videos</h1>
                     </div>
                     <div className="flex items-center gap-2">
-                        <CreateVideoButton />
                         <Button
                             variant="ghost"
                             size="icon"
@@ -84,6 +83,7 @@ const MyVideos = () => {
                         >
                             <Home className="h-5 w-5" />
                         </Button>
+                        <CreateVideoButton />
                         <PhantomWalletButton />
                     </div>
                 </div>

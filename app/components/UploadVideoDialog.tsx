@@ -37,11 +37,13 @@ export const UploadVideoDialog = ({ open, onOpenChange, isPaid }: UploadVideoDia
         setLoading(true);
 
         try {
+            const description = formData.description.trim() || formData.title;
+
             const requestData = {
                 wallet_address: walletAddress,
                 youtube_url: formData.youtubeUrl,
                 title: formData.title,
-                description: formData.description,
+                description: description,
                 thumbnail_url: formData.thumbnailUrl || null,
                 sol_price: isPaid ? parseFloat(formData.solPrice) : 0,
                 is_paid: isPaid,
@@ -102,7 +104,7 @@ export const UploadVideoDialog = ({ open, onOpenChange, isPaid }: UploadVideoDia
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, title: e.target.value })}
                             placeholder="Enter video title"
                             required
-                            className="font-roboto border-green-500 focus:border-green-600 focus:ring-green-500"
+                            className="font-roboto border-green-500 focus:border-green-600 focus:ring-green-900"
                         />
                     </div>
 
@@ -117,7 +119,7 @@ export const UploadVideoDialog = ({ open, onOpenChange, isPaid }: UploadVideoDia
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, youtubeUrl: e.target.value })}
                             placeholder="https://www.youtube.com/watch?v=..."
                             required
-                            className="font-roboto border-green-500 focus:border-green-600 focus:ring-green-500"
+                            className="font-roboto border-green-500 focus:border-green-600 focus:ring-green-900"
                         />
                     </div>
 
@@ -129,7 +131,7 @@ export const UploadVideoDialog = ({ open, onOpenChange, isPaid }: UploadVideoDia
                             onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData({ ...formData, description: e.target.value })}
                             placeholder="Enter video description"
                             rows={3}
-                            className="font-roboto border-green-500 focus:border-green-600 focus:ring-green-500"
+                            className="font-roboto border-green-500 focus:border-green-600 focus:ring-green-900"
                         />
                     </div>
 
@@ -140,7 +142,7 @@ export const UploadVideoDialog = ({ open, onOpenChange, isPaid }: UploadVideoDia
                             value={formData.thumbnailUrl}
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, thumbnailUrl: e.target.value })}
                             placeholder="https://..."
-                            className="font-roboto border-green-500 focus:border-green-600 focus:ring-green-500"
+                            className="font-roboto border-green-500 focus:border-green-600 focus:ring-green-900"
                         />
                     </div>
 
@@ -156,7 +158,7 @@ export const UploadVideoDialog = ({ open, onOpenChange, isPaid }: UploadVideoDia
                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, solPrice: e.target.value })}
                                 placeholder="0.00"
                                 required
-                                className="font-roboto border-green-500 focus:border-green-600 focus:ring-green-500"
+                                className="font-roboto border-green-500 focus:border-green-600 focus:ring-green-900"
                             />
                         </div>
                     )}

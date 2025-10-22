@@ -3,15 +3,21 @@ import { z } from "zod";
 // User schemas
 export const UserCreateSchema = z.object({
     wallet_address: z.string().min(1, "Wallet address is required"),
-    username: z.string().optional(),
-    email: z.string().email().optional(),
-    avatar: z.string().url().optional(),
+    username: z.string()
+        .min(3, "Username must be at least 3 characters")
+        .max(15, "Username must be 15 characters or less")
+        .regex(/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores")
+        .optional(),
+    display_name: z.string().max(50, "Display name must be less than 50 characters").optional(),
+    bio: z.string().max(500, "Bio must be less than 500 characters").optional(),
+    avatar_url: z.string().optional(),
 });
 
 export const UserUpdateSchema = UserCreateSchema.partial();
 
 export const UserSchema = UserCreateSchema.extend({
     id: z.string(),
+    joined_date: z.date(),
     created_at: z.date(),
     updated_at: z.date(),
 });

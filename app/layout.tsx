@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
-import {  Roboto } from "next/font/google";
+import { Roboto } from "next/font/google";
 import "./globals.css";
-
-
+import { WalletProvider } from "@/app/contexts/WalletContext";
+import { Toaster } from "@/app/components/ui/toaster";
+import { Toaster as Sonner } from "@/app/components/ui/sonner";
+import { TooltipProvider } from "@/app/components/ui/tooltip";
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -26,7 +28,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={roboto.className}>
-      <body>{children}</body>
+      <body>
+        <WalletProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            {children}
+          </TooltipProvider>
+        </WalletProvider>
+      </body>
     </html>
   )
 }
