@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { PaymentDialog } from './PaymentDialog';
 
 interface VideoCardProps {
     id: string;
@@ -23,6 +24,7 @@ interface VideoCardProps {
 }
 
 export const VideoCard = ({
+    id,
     youtubeUrl,
     title,
     description,
@@ -35,13 +37,13 @@ export const VideoCard = ({
 }: VideoCardProps) => {
     const { walletAddress: currentUserWallet } = useWallet();
     const router = useRouter();
-    const [isPurchasing, setIsPurchasing] = useState(false);
     const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
     const [userInfo, setUserInfo] = useState<{
         displayName: string;
         username?: string;
         isUsername: boolean;
     } | null>(null);
+    const [hasPurchasedState, setHasPurchasedState] = useState(hasPurchased);
 
     // Fetch user info
     useEffect(() => {
@@ -92,25 +94,30 @@ export const VideoCard = ({
         return `${address.slice(0, 4)}...${address.slice(-4)}`;
     };
 
-    const canWatch = !isPaid || hasPurchased || walletAddress === currentUserWallet;
+    const canWatch = !isPaid || hasPurchasedState || walletAddress === currentUserWallet;
 
-    // Handle video purchase
-    const handlePurchase = async () => {
-        if (!currentUserWallet) {
-            toast.error('Please connect your wallet to purchase');
-            return;
+    // Check purchase status
+    useEffect(() => {
+        if (isPaid && currentUserWallet && walletAddress !== currentUserWallet) {
+            checkPurchaseStatus();
         }
+    }, [isPaid, currentUserWallet, walletAddress]);
 
-        setIsPurchasing(true);
+    const checkPurchaseStatus = async () => {
         try {
-            // TODO: Implement SOL payment logic here
-            toast.success('Purchase functionality coming soon!');
+            const response = await fetch(`/api/payments?videoId=${id}&buyerWallet=${currentUserWallet}`);
+            if (response.ok) {
+                const data = await response.json();
+                setHasPurchasedState(data.hasPurchased);
+            }
         } catch (error) {
-            console.error('Purchase error:', error);
-            toast.error('Failed to purchase video');
-        } finally {
-            setIsPurchasing(false);
+            console.error('Error checking purchase status:', error);
         }
+    };
+
+    const handlePaymentSuccess = () => {
+        setHasPurchasedState(true);
+        toast.success('Payment successful! You can now watch the video.');
     };
 
     // Handle video play (for paid content overlay)
@@ -214,17 +221,16 @@ export const VideoCard = ({
                             </Badge>
                             {canWatch ? (
                                 <Badge variant="outline" className="text-green-600 border-green-600">
-                                    {hasPurchased ? 'Purchased' : 'Your Video'}
+                                    {hasPurchasedState ? 'Purchased' : 'Your Video'}
                                 </Badge>
                             ) : (
-                                <Button
-                                    size="sm"
-                                    onClick={handlePurchase}
-                                    disabled={isPurchasing}
-                                    className="border border-green-500 hover:border-green-600 bg-linear-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-roboto font-bold px-3 py-1 rounded text-xs cursor-pointer"
-                                >
-                                    {isPurchasing ? 'Buying...' : `Buy ${solPrice} SOL`}
-                                </Button>
+                                <PaymentDialog
+                                    videoId={id}
+                                    videoTitle={title}
+                                    solPrice={solPrice}
+                                    creatorWalletAddress={walletAddress || ''}
+                                    onPaymentSuccess={handlePaymentSuccess}
+                                />
                             )}
                         </>
                     ) : (

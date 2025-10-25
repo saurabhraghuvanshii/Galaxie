@@ -45,10 +45,15 @@ export const VideoSchema = VideoCreateSchema.extend({
 // Purchase schemas
 export const PurchaseCreateSchema = z.object({
     video_id: z.string().min(1, "Video ID is required"),
-    buyer_id: z.string().min(1, "Buyer ID is required"),
-    sol_amount: z.number().min(0, "Amount must be non-negative"),
-    transaction_hash: z.string().optional(),
-    is_completed: z.boolean().default(false),
+    buyer_wallet_address: z.string().min(1, "Buyer wallet address is required"),
+    creator_wallet_address: z.string().min(1, "Creator wallet address is required"),
+    amount_paid: z.bigint().min(BigInt(0), "Amount paid must be non-negative"),
+    platform_fee: z.bigint().min(BigInt(0), "Platform fee must be non-negative"),
+    creator_payout: z.bigint().min(BigInt(0), "Creator payout must be non-negative"),
+    transaction_signature: z.string().min(1, "Transaction signature is required"),
+    status: z.string().default("completed"),
+    block_number: z.number().int().optional(),
+    buyer_id: z.string().optional(),
 });
 
 export const PurchaseUpdateSchema = PurchaseCreateSchema.partial();
@@ -57,24 +62,6 @@ export const PurchaseSchema = PurchaseCreateSchema.extend({
     id: z.string(),
     created_at: z.date(),
     completed_at: z.date().optional(),
-});
-
-// Payment schemas
-export const PaymentCreateSchema = z.object({
-    from_address: z.string().min(1, "From address is required"),
-    to_address: z.string().min(1, "To address is required"),
-    sol_amount: z.number().min(0, "Amount must be non-negative"),
-    transaction_hash: z.string().min(1, "Transaction hash is required"),
-    status: z.enum(["pending", "completed", "failed"]).default("pending"),
-    block_number: z.number().int().optional(),
-});
-
-export const PaymentUpdateSchema = PaymentCreateSchema.partial();
-
-export const PaymentSchema = PaymentCreateSchema.extend({
-    id: z.string(),
-    created_at: z.date(),
-    confirmed_at: z.date().optional(),
 });
 
 // Type exports
@@ -89,7 +76,3 @@ export type VideoUpdate = z.infer<typeof VideoUpdateSchema>;
 export type Purchase = z.infer<typeof PurchaseSchema>;
 export type PurchaseCreate = z.infer<typeof PurchaseCreateSchema>;
 export type PurchaseUpdate = z.infer<typeof PurchaseUpdateSchema>;
-
-export type Payment = z.infer<typeof PaymentSchema>;
-export type PaymentCreate = z.infer<typeof PaymentCreateSchema>;
-export type PaymentUpdate = z.infer<typeof PaymentUpdateSchema>;

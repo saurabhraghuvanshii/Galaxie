@@ -124,7 +124,7 @@ export const UploadVideoDialog = ({ open, onOpenChange, isPaid }: UploadVideoDia
                     </div>
 
                     <div>
-                        <Label htmlFor="description" className="font-roboto font-bold text-green-600 text-base">Description (Optional)</Label>
+                        <Label htmlFor="description" className="font-roboto font-bold text-green-600 text-base">Description</Label>
                         <Textarea
                             id="description"
                             value={formData.description}
@@ -136,7 +136,7 @@ export const UploadVideoDialog = ({ open, onOpenChange, isPaid }: UploadVideoDia
                     </div>
 
                     <div>
-                        <Label htmlFor="thumbnailUrl" className="font-roboto font-bold text-green-600 text-base">Custom Thumbnail URL (Optional)</Label>
+                        <Label htmlFor="thumbnailUrl" className="font-roboto font-bold text-green-600 text-base">Custom Thumbnail URL</Label>
                         <Input
                             id="thumbnailUrl"
                             value={formData.thumbnailUrl}

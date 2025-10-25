@@ -1,5 +1,5 @@
 import { db } from '../db';
-import { VideoCreateSchema, VideoUpdateSchema, UserCreateSchema, PurchaseCreateSchema, PaymentCreateSchema } from './index';
+import { VideoCreateSchema, VideoUpdateSchema, UserCreateSchema, PurchaseCreateSchema } from './index';
 import { z } from 'zod';
 
 // Video operations
@@ -66,44 +66,68 @@ export async function createPurchase(data: z.infer<typeof PurchaseCreateSchema>)
     });
 }
 
-export async function getPurchasesByBuyer(buyerId: string) {
+export async function getPurchasesByBuyer(buyerWalletAddress: string) {
     return await db.purchase.findMany({
-        where: { buyer_id: buyerId },
+        where: { buyer_wallet_address: buyerWalletAddress },
         include: { video: true },
+        orderBy: { created_at: 'desc' },
     });
 }
 
-export async function getPurchaseByVideoAndBuyer(videoId: string, buyerId: string) {
+export async function getPurchaseByVideoAndBuyer(videoId: string, buyerWalletAddress: string) {
     return await db.purchase.findUnique({
         where: {
-            video_id_buyer_id: {
+            video_id_buyer_wallet_address: {
                 video_id: videoId,
-                buyer_id: buyerId,
+                buyer_wallet_address: buyerWalletAddress,
             },
         },
     });
 }
 
-// Payment operations
-export async function createPayment(data: z.infer<typeof PaymentCreateSchema>) {
-    const validatedData = PaymentCreateSchema.parse(data);
-    return await db.payment.create({
-        data: validatedData,
+// Purchase operations (consolidated payment tracking)
+export async function getPurchaseByTransactionSignature(transactionSignature: string) {
+    return await db.purchase.findUnique({
+        where: { transaction_signature: transactionSignature },
     });
 }
 
-export async function getPaymentByTransactionHash(transactionHash: string) {
-    return await db.payment.findUnique({
-        where: { transaction_hash: transactionHash },
-    });
-}
-
-export async function updatePaymentStatus(id: string, status: string, confirmedAt?: Date) {
-    return await db.payment.update({
+export async function updatePurchaseStatus(id: string, status: string, completedAt?: Date) {
+    return await db.purchase.update({
         where: { id },
         data: {
             status,
-            confirmed_at: confirmedAt,
+            completed_at: completedAt,
         },
+    });
+}
+
+export async function getPurchasesByCreator(creatorWalletAddress: string) {
+    return await db.purchase.findMany({
+        where: { creator_wallet_address: creatorWalletAddress },
+        include: { video: true },
+        orderBy: { created_at: 'desc' },
+    });
+}
+
+export async function getPurchaseById(id: string) {
+    return await db.purchase.findUnique({
+        where: { id },
+        include: { video: true, buyer: true },
+    });
+}
+
+export async function getAllPurchases() {
+    return await db.purchase.findMany({
+        include: { video: true, buyer: true },
+        orderBy: { created_at: 'desc' },
+    });
+}
+
+export async function getPurchasesByStatus(status: string) {
+    return await db.purchase.findMany({
+        where: { status },
+        include: { video: true, buyer: true },
+        orderBy: { created_at: 'desc' },
     });
 }

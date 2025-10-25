@@ -24,14 +24,16 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
     }, []);
 
     useEffect(() => {
-
         const { solana } = window as any;
         if (solana?.isPhantom) {
             solana.on('accountChanged', (publicKey: any) => {
                 if (publicKey) {
-                    setWalletAddress(publicKey.toString());
+                    const newAddress = publicKey.toString();
+                    setWalletAddress(newAddress);
+                    localStorage.setItem('walletAddress', newAddress);
                 } else {
                     setWalletAddress(null);
+                    localStorage.removeItem('walletAddress');
                 }
             });
         }
@@ -74,7 +76,7 @@ export const WalletProvider = ({ children }: { children: React.ReactNode }) => {
             setWalletAddress(null);
 
             localStorage.removeItem('walletAddress');
-            
+
             router.push('/');
         } catch (error) {
             console.error('Error disconnecting wallet:', error);
