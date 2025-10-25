@@ -144,7 +144,7 @@ export const EditProfileDialog = ({
 
                         <div className="text-center">
                             <Label htmlFor="avatar" className="cursor-pointer">
-                                <div className="flex items-center gap-2 px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg hover:bg-gray-700 transition-colors">
+                                <div className="flex items-center gap-2 px-4 py-2 bg-gray-800 border border-green-900 rounded-lg hover:bg-gray-700 transition-colors">
                                     <Upload className="w-4 h-4" />
                                     Upload Image
                                 </div>
@@ -165,7 +165,7 @@ export const EditProfileDialog = ({
                     {/* Username */}
                     <div>
                         <Label htmlFor="username" className="font-roboto font-bold text-green-600 text-base">
-                            Username (Optional)
+                            Username
                         </Label>
                         <Input
                             id="username"
@@ -190,7 +190,7 @@ export const EditProfileDialog = ({
                     {/* Display Name */}
                     <div>
                         <Label htmlFor="display_name" className="font-roboto font-bold text-green-600 text-base">
-                            Display Name (Optional)
+                            Display Name
                         </Label>
                         <Input
                             id="display_name"
@@ -204,7 +204,7 @@ export const EditProfileDialog = ({
                     {/* Bio */}
                     <div>
                         <Label htmlFor="bio" className="font-roboto font-bold text-green-600 text-base">
-                            Bio (Optional)
+                            Bio
                         </Label>
                         <Textarea
                             id="bio"

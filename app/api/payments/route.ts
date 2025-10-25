@@ -1,13 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
     createSolanaConnection,
-    createPaymentTransaction,
     verifyTransaction,
-    solToLamports,
-    createKeypairFromPrivateKey,
-    type PaymentRequest
 } from '@/app/lib/solana-payment';
-import { PublicKey } from '@solana/web3.js';
 import { db } from '@/app/lib/db';
 
 export async function POST(request: NextRequest) {
@@ -19,8 +14,7 @@ export async function POST(request: NextRequest) {
             amount,
             feePercent = 5,
             videoId,
-            transactionSignature,
-            isDemo = false
+            transactionSignature
         } = body;
 
         // Validate required fields
@@ -30,55 +24,7 @@ export async function POST(request: NextRequest) {
             }, { status: 400 });
         }
 
-        // For demo mode, skip Solana transaction processing
-        if (isDemo) {
-            // Simulate successful payment
-            const platformFee = Math.floor((amount * feePercent) / 100);
-            const creatorPayout = amount - platformFee;
-            const mockTransactionSignature = `demo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-            // Save to database (use upsert to handle duplicates)
-            try {
-                await db.purchase.upsert({
-                    where: {
-                        video_id_buyer_wallet_address: {
-                            video_id: videoId,
-                            buyer_wallet_address: buyerWalletAddress,
-                        },
-                    },
-                    update: {
-                        transaction_signature: mockTransactionSignature,
-                        status: 'completed',
-                        completed_at: new Date(),
-                    },
-                    create: {
-                        video_id: videoId,
-                        buyer_wallet_address: buyerWalletAddress,
-                        creator_wallet_address: creatorWalletAddress,
-                        amount_paid: BigInt(Math.floor(amount * 1000000000)), // Convert to lamports
-                        platform_fee: BigInt(Math.floor(platformFee * 1000000000)),
-                        creator_payout: BigInt(Math.floor(creatorPayout * 1000000000)),
-                        transaction_signature: mockTransactionSignature,
-                        status: 'completed',
-                        completed_at: new Date(),
-                    },
-                });
-            } catch (dbError) {
-                console.error('Failed to save demo purchase record:', dbError);
-            }
-
-            return NextResponse.json({
-                success: true,
-                transactionSignature: mockTransactionSignature,
-                platformFee: platformFee,
-                creatorPayout: creatorPayout,
-                platformFeeSOL: platformFee,
-                creatorPayoutSOL: creatorPayout,
-                isDemo: true
-            });
-        }
-
-        // Real Solana transaction - verify the transaction signature
+        // Verify the transaction signature
         if (!transactionSignature) {
             return NextResponse.json({
                 error: 'Transaction signature required for real transactions'

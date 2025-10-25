@@ -3,13 +3,13 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/app/components/ui/dialog';
 import { Button } from '@/app/components/ui/button';
-import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
 import { Loader2, CreditCard, AlertCircle } from 'lucide-react';
 import { useWallet } from '@/app/contexts/WalletContext';
-import { requestWalletSignature, getWalletAddress } from '@/app/lib/wallet-utils';
 import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
+
+const PLATFORM_WALLET_ADDRESS = process.env.NEXT_PUBLIC_PLATFORM_WALLET_ADDRESS || '';
 
 interface PaymentDialogProps {
     videoId: string;
@@ -67,8 +67,8 @@ export function PaymentDialog({
                 feePayer: new PublicKey(walletAddress),
             });
 
-            // Platform wallet address (you can set this in environment variables)
-            const platformWallet = new PublicKey('5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1'); // Example devnet address
+            // Platform wallet address
+            const platformWallet = new PublicKey(PLATFORM_WALLET_ADDRESS);
             const creatorWallet = new PublicKey(creatorWalletAddress);
 
             // Add transfer to platform (if there's a platform fee)
@@ -114,7 +114,6 @@ export function PaymentDialog({
                     feePercent: feePercent,
                     videoId,
                     transactionSignature: signature,
-                    isDemo: false, // Real transaction
                 }),
             });
 
