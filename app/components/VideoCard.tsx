@@ -43,7 +43,8 @@ export const VideoCard = ({
         username?: string;
         isUsername: boolean;
     } | null>(null);
-    const [hasPurchasedState, setHasPurchasedState] = useState(hasPurchased);
+    const [hasPurchasedState, setHasPurchasedState] = useState(false);
+    const [isCheckingPurchase, setIsCheckingPurchase] = useState(false);
 
     // Fetch user info
     useEffect(() => {
@@ -96,24 +97,42 @@ export const VideoCard = ({
 
     const canWatch = !isPaid || hasPurchasedState || walletAddress === currentUserWallet;
 
-    // Check purchase status
-    useEffect(() => {
-        if (isPaid && currentUserWallet && walletAddress !== currentUserWallet) {
-            checkPurchaseStatus();
-        }
-    }, [isPaid, currentUserWallet, walletAddress]);
-
+    // Check purchase status on mount and when relevant state changes
     const checkPurchaseStatus = async () => {
+        if (!currentUserWallet || isCheckingPurchase) return;
+
+        console.log('Checking purchase status for video:', id, 'buyer:', currentUserWallet);
+        setIsCheckingPurchase(true);
         try {
             const response = await fetch(`/api/payments?videoId=${id}&buyerWallet=${currentUserWallet}`);
             if (response.ok) {
                 const data = await response.json();
+                console.log('Purchase check result:', data);
                 setHasPurchasedState(data.hasPurchased);
+            } else {
+                console.error('Failed to check purchase status:', response.status);
             }
         } catch (error) {
             console.error('Error checking purchase status:', error);
+        } finally {
+            setIsCheckingPurchase(false);
         }
     };
+
+    // Check purchase status whenever relevant state changes
+    useEffect(() => {
+        // Reset state if user disconnects
+        if (!currentUserWallet) {
+            setHasPurchasedState(false);
+            return;
+        }
+
+        // Check purchase status if this is a paid video
+        if (isPaid) {
+            checkPurchaseStatus();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isPaid, currentUserWallet, id]);
 
     const handlePaymentSuccess = () => {
         setHasPurchasedState(true);

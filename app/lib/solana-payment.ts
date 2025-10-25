@@ -60,13 +60,19 @@ export async function createPaymentTransaction(
         const { platformFee, creatorPayout } = calculatePaymentBreakdown(totalAmount, feePercent);
 
         // Get platform wallet keypair
-        if (!PLATFORM_WALLET_PRIVATE_KEY) {
-            throw new Error('Platform wallet private key not configured');
-        }
+        let platformKeypair: Keypair;
 
-        const platformKeypair = Keypair.fromSecretKey(
-            bs58.decode(PLATFORM_WALLET_PRIVATE_KEY)
-        );
+        if (PLATFORM_WALLET_PRIVATE_KEY) {
+            // Use configured platform wallet
+            platformKeypair = Keypair.fromSecretKey(
+                bs58.decode(PLATFORM_WALLET_PRIVATE_KEY)
+            );
+        } else {
+            // For devnet testing, use a default platform wallet
+            // In production, you should always have PLATFORM_WALLET_PRIVATE_KEY set
+            console.warn('Using default devnet platform wallet - not recommended for production');
+            platformKeypair = Keypair.generate(); // Generate a random keypair for testing
+        }
 
         // Get recent blockhash
         const { blockhash } = await connection.getLatestBlockhash();

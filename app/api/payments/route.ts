@@ -14,17 +14,74 @@ export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
         const {
-            buyerPrivateKey,
+            buyerWalletAddress,
             creatorWalletAddress,
             amount,
             feePercent = 5,
-            videoId
+            videoId,
+            transactionSignature,
+            isDemo = false
         } = body;
 
         // Validate required fields
-        if (!buyerPrivateKey || !creatorWalletAddress || !amount || !videoId) {
+        if (!buyerWalletAddress || !creatorWalletAddress || !amount || !videoId) {
             return NextResponse.json({
-                error: 'Missing required fields: buyerPrivateKey, creatorWalletAddress, amount, videoId'
+                error: 'Missing required fields: buyerWalletAddress, creatorWalletAddress, amount, videoId'
+            }, { status: 400 });
+        }
+
+        // For demo mode, skip Solana transaction processing
+        if (isDemo) {
+            // Simulate successful payment
+            const platformFee = Math.floor((amount * feePercent) / 100);
+            const creatorPayout = amount - platformFee;
+            const mockTransactionSignature = `demo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+            // Save to database (use upsert to handle duplicates)
+            try {
+                await db.purchase.upsert({
+                    where: {
+                        video_id_buyer_wallet_address: {
+                            video_id: videoId,
+                            buyer_wallet_address: buyerWalletAddress,
+                        },
+                    },
+                    update: {
+                        transaction_signature: mockTransactionSignature,
+                        status: 'completed',
+                        completed_at: new Date(),
+                    },
+                    create: {
+                        video_id: videoId,
+                        buyer_wallet_address: buyerWalletAddress,
+                        creator_wallet_address: creatorWalletAddress,
+                        amount_paid: BigInt(Math.floor(amount * 1000000000)), // Convert to lamports
+                        platform_fee: BigInt(Math.floor(platformFee * 1000000000)),
+                        creator_payout: BigInt(Math.floor(creatorPayout * 1000000000)),
+                        transaction_signature: mockTransactionSignature,
+                        status: 'completed',
+                        completed_at: new Date(),
+                    },
+                });
+            } catch (dbError) {
+                console.error('Failed to save demo purchase record:', dbError);
+            }
+
+            return NextResponse.json({
+                success: true,
+                transactionSignature: mockTransactionSignature,
+                platformFee: platformFee,
+                creatorPayout: creatorPayout,
+                platformFeeSOL: platformFee,
+                creatorPayoutSOL: creatorPayout,
+                isDemo: true
+            });
+        }
+
+        // Real Solana transaction - verify the transaction signature
+        if (!transactionSignature) {
+            return NextResponse.json({
+                error: 'Transaction signature required for real transactions'
             }, { status: 400 });
         }
 
@@ -42,70 +99,61 @@ export async function POST(request: NextRequest) {
             }, { status: 400 });
         }
 
-        // Create Solana connection
+        // Verify transaction on Solana devnet
         const connection = createSolanaConnection();
+        const isVerified = await verifyTransaction(connection, transactionSignature);
 
-        // Create buyer keypair from private key
-        const buyerKeypair = createKeypairFromPrivateKey(buyerPrivateKey);
-
-        // Convert amount to lamports
-        const amountInLamports = solToLamports(amount);
-
-        // Create payment request
-        const paymentRequest: PaymentRequest = {
-            buyerKeypair,
-            creatorPublicKey: new PublicKey(creatorWalletAddress),
-            totalAmount: amountInLamports,
-            feePercent,
-            videoId,
-        };
-
-        // Process payment
-        const paymentResult = await createPaymentTransaction(connection, paymentRequest);
-
-        if (!paymentResult.success) {
+        if (!isVerified) {
             return NextResponse.json({
-                error: paymentResult.error || 'Payment failed'
+                error: 'Transaction verification failed on Solana network'
             }, { status: 400 });
         }
 
-        // Verify transaction
-        if (paymentResult.transactionSignature) {
-            const isVerified = await verifyTransaction(connection, paymentResult.transactionSignature);
-            if (!isVerified) {
-                return NextResponse.json({
-                    error: 'Transaction verification failed'
-                }, { status: 400 });
-            }
-        }
+        // Calculate fees
+        const platformFee = Math.floor((amount * feePercent) / 100);
+        const creatorPayout = amount - platformFee;
 
-        // Update video purchase record in database
+        // Save purchase record in database (use upsert to handle duplicates)
         try {
-            await db.purchase.create({
-                data: {
+            await db.purchase.upsert({
+                where: {
+                    video_id_buyer_wallet_address: {
+                        video_id: videoId,
+                        buyer_wallet_address: buyerWalletAddress,
+                    },
+                },
+                update: {
+                    transaction_signature: transactionSignature,
+                    status: 'completed',
+                    completed_at: new Date(),
+                },
+                create: {
                     video_id: videoId,
-                    buyer_wallet_address: buyerKeypair.publicKey.toString(),
+                    buyer_wallet_address: buyerWalletAddress,
                     creator_wallet_address: creatorWalletAddress,
-                    amount_paid: BigInt(amountInLamports),
-                    platform_fee: BigInt(paymentResult.platformFee),
-                    creator_payout: BigInt(paymentResult.creatorPayout),
-                    transaction_signature: paymentResult.transactionSignature || '',
+                    amount_paid: BigInt(Math.floor(amount * 1000000000)), // Convert to lamports
+                    platform_fee: BigInt(Math.floor(platformFee * 1000000000)),
+                    creator_payout: BigInt(Math.floor(creatorPayout * 1000000000)),
+                    transaction_signature: transactionSignature,
                     status: 'completed',
                     completed_at: new Date(),
                 },
             });
         } catch (dbError) {
             console.error('Failed to save purchase record:', dbError);
-            // Don't fail the payment if database save fails
+            return NextResponse.json({
+                error: 'Failed to save purchase record'
+            }, { status: 500 });
         }
 
         return NextResponse.json({
             success: true,
-            transactionSignature: paymentResult.transactionSignature,
-            platformFee: paymentResult.platformFee,
-            creatorPayout: paymentResult.creatorPayout,
-            platformFeeSOL: paymentResult.platformFee / 1000000000,
-            creatorPayoutSOL: paymentResult.creatorPayout / 1000000000,
+            transactionSignature: transactionSignature,
+            platformFee: platformFee,
+            creatorPayout: creatorPayout,
+            platformFeeSOL: platformFee,
+            creatorPayoutSOL: creatorPayout,
+            network: 'devnet'
         });
 
     } catch (error) {
@@ -140,7 +188,7 @@ export async function GET(request: NextRequest) {
             hasPurchased: !!purchase,
             purchase: purchase ? {
                 transactionSignature: purchase.transaction_signature,
-                amountPaid: purchase.amount_paid,
+                amountPaid: purchase.amount_paid.toString(),
                 createdAt: purchase.created_at,
             } : null,
         });
