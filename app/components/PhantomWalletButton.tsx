@@ -3,7 +3,7 @@
 import { Button } from '@/app/components/ui/button';
 import { useWallet } from '@/app/contexts/WalletContext';
 import { useRouter } from 'next/navigation';
-import { ChevronDown, User } from 'lucide-react';
+import { ChevronDown, User, ShoppingBag, LogOutIcon } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import {
     DropdownMenu,
@@ -82,15 +82,20 @@ export const PhantomWalletButton = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => router.push(getProfileUrl())} className="flex items-center gap-2 hover:bg-gray-800 cursor-pointer">
-                    <User className="w-4 h-4" />
+                    <User className="w-4 h-4 text-green-400" />
                     Profile
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => router.push('/my-videos')} className="flex items-center gap-2 hover:bg-gray-800 cursor-pointer">
                     <img src="/youtube.svg" alt="YouTube" className="w-4 h-4" />
                     My Videos
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={disconnectWallet} className="hover:bg-gray-800 cursor-pointer">
-                    Disconnect
+                <DropdownMenuItem onClick={() => router.push('/purchased')} className="flex items-center gap-2 hover:bg-gray-800 cursor-pointer">
+                    <ShoppingBag className="w-4 h-4 text-green-400"/>
+                    Purchased
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={disconnectWallet} className="flex items-center gap-2 hover:bg-gray-800 cursor-pointer">
+                    <LogOutIcon className="w-4 h-4 text-green-400"/>
+                    Logout
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

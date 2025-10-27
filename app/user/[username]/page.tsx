@@ -9,6 +9,7 @@ import { VideoCard } from '@/app/components/VideoCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/app/components/ui/tabs';
 import { useWallet } from '@/app/contexts/WalletContext';
 import { PhantomWalletButton } from '@/app/components/PhantomWalletButton';
+import { CreateVideoButton } from '@/app/components/CreateVideoButton';
 import { ArrowLeft, Home, Edit3, Copy, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -32,6 +33,7 @@ interface Video {
     is_paid: boolean | null;
     is_live: boolean | null;
     wallet_address: string;
+    created_at: string;
 }
 
 const UserProfilePage = () => {
@@ -179,6 +181,7 @@ const UserProfilePage = () => {
                         >
                             <Home className="h-5 w-5" />
                         </Button>
+                        {walletAddress && <CreateVideoButton />}
                         {walletAddress ? (
                             <PhantomWalletButton />
                         ) : (
@@ -330,6 +333,7 @@ const UserProfilePage = () => {
                                             isPaid={video.is_paid || false}
                                             isLive={video.is_live || false}
                                             walletAddress={video.wallet_address}
+                                            createdAt={video.created_at}
                                         />
                                     ))}
                                 </div>
@@ -359,6 +363,7 @@ const UserProfilePage = () => {
                                             isPaid={video.is_paid || false}
                                             isLive={video.is_live || false}
                                             walletAddress={video.wallet_address}
+                                            createdAt={video.created_at}
                                         />
                                     ))}
                                 </div>
@@ -388,6 +393,7 @@ const UserProfilePage = () => {
                                             isPaid={video.is_paid || false}
                                             isLive={video.is_live || false}
                                             walletAddress={video.wallet_address}
+                                            createdAt={video.created_at}
                                         />
                                     ))}
                                 </div>

@@ -6,7 +6,7 @@ import { Button } from '@/app/components/ui/button';
 import { useWallet } from '@/app/contexts/WalletContext';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PaymentDialog } from './PaymentDialog';
 
@@ -21,6 +21,7 @@ interface VideoCardProps {
     isLive: boolean;
     walletAddress?: string;
     hasPurchased?: boolean;
+    createdAt?: string;
 }
 
 export const VideoCard = ({
@@ -33,7 +34,8 @@ export const VideoCard = ({
     isPaid,
     isLive,
     walletAddress,
-    hasPurchased = false
+    hasPurchased = false,
+    createdAt
 }: VideoCardProps) => {
     const { walletAddress: currentUserWallet } = useWallet();
     const router = useRouter();
@@ -93,6 +95,14 @@ export const VideoCard = ({
 
     const formatWalletAddress = (address: string) => {
         return `${address.slice(0, 4)}...${address.slice(-4)}`;
+    };
+
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
     };
 
     const canWatch = !isPaid || hasPurchasedState || walletAddress === currentUserWallet;
@@ -228,6 +238,16 @@ export const VideoCard = ({
                         >
                             By: {userInfo.displayName}
                         </button>
+                    </div>
+                )}
+
+                {/* Created Date */}
+                {createdAt && (
+                    <div className="mb-2">
+                        <div className="flex items-center gap-2 text-xs text-gray-300">
+                            <Calendar className="w-3 h-3" />
+                            <span>Created: {formatDate(createdAt)}</span>
+                        </div>
                     </div>
                 )}
 

@@ -21,6 +21,7 @@ interface Video {
     is_paid: boolean | null;
     is_live: boolean | null;
     wallet_address: string;
+    created_at: string;
 }
 
 const MyVideos = () => {
@@ -125,6 +126,7 @@ const MyVideos = () => {
                                 isPaid={video.is_paid || false}
                                 isLive={video.is_live || false}
                                 walletAddress={video.wallet_address}
+                                createdAt={video.created_at}
                             />
                         ))}
                     </div>
