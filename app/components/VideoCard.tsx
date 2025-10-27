@@ -1,12 +1,9 @@
 'use client';
 
-import { Card, CardContent } from '@/app/components/ui/card';
-import { Badge } from '@/app/components/ui/badge';
-import { Button } from '@/app/components/ui/button';
 import { useWallet } from '@/app/contexts/WalletContext';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { ChevronDown, ChevronUp, Calendar } from 'lucide-react';
+import { Play, Wallet } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PaymentDialog } from './PaymentDialog';
 
@@ -28,7 +25,6 @@ export const VideoCard = ({
     id,
     youtubeUrl,
     title,
-    description,
     thumbnailUrl,
     solPrice,
     isPaid,
@@ -39,14 +35,15 @@ export const VideoCard = ({
 }: VideoCardProps) => {
     const { walletAddress: currentUserWallet } = useWallet();
     const router = useRouter();
-    const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
     const [userInfo, setUserInfo] = useState<{
         displayName: string;
         username?: string;
         isUsername: boolean;
+        avatarUrl?: string;
     } | null>(null);
     const [hasPurchasedState, setHasPurchasedState] = useState(false);
     const [isCheckingPurchase, setIsCheckingPurchase] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
 
     // Fetch user info
     useEffect(() => {
@@ -65,7 +62,8 @@ export const VideoCard = ({
                 setUserInfo({
                     displayName: user.username || user.display_name || `${walletAddress.slice(0, 3)}...${walletAddress.slice(-3)}`,
                     username: user.username,
-                    isUsername: !!user.username
+                    isUsername: !!user.username,
+                    avatarUrl: user.avatar_url
                 });
             } else {
                 // Fallback to wallet address
@@ -93,16 +91,18 @@ export const VideoCard = ({
     const videoId = getYoutubeId(youtubeUrl);
     const thumbnail = thumbnailUrl || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
 
-    const formatWalletAddress = (address: string) => {
-        return `${address.slice(0, 4)}...${address.slice(-4)}`;
-    };
-
     const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffTime = Math.abs(now.getTime() - date.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 0) return 'Today';
+        if (diffDays === 1) return 'Yesterday';
+        if (diffDays < 7) return `${diffDays} days ago`;
+        if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+        if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
+        return `${Math.floor(diffDays / 365)} years ago`;
     };
 
     const canWatch = !isPaid || hasPurchasedState || walletAddress === currentUserWallet;
@@ -121,15 +121,17 @@ export const VideoCard = ({
                 setHasPurchasedState(data.hasPurchased);
             } else {
                 console.error('Failed to check purchase status:', response.status);
+                setHasPurchasedState(false); // Default to not purchased on error
             }
         } catch (error) {
             console.error('Error checking purchase status:', error);
+            setHasPurchasedState(false); // Default to not purchased on error
         } finally {
             setIsCheckingPurchase(false);
         }
     };
 
-    // Check purchase status whenever relevant state changes
+    // Initial purchase status check
     useEffect(() => {
         // Reset state if user disconnects
         if (!currentUserWallet) {
@@ -144,150 +146,168 @@ export const VideoCard = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isPaid, currentUserWallet, id]);
 
+    // Separate useEffect to handle wallet changes and video changes
+    useEffect(() => {
+        if (isPaid && currentUserWallet) {
+            checkPurchaseStatus();
+        } else if (!currentUserWallet) {
+            setHasPurchasedState(false);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentUserWallet, id]);
+
     const handlePaymentSuccess = () => {
         setHasPurchasedState(true);
         toast.success('Payment successful! You can now watch the video.');
     };
 
-    // Handle video play (for paid content overlay)
-    const handlePlay = () => {
-        if (!canWatch) {
-            toast.error('Please purchase this video to watch');
+    const handleCardClick = () => {
+        router.push(`/video/${id}`);
+    };
+
+    const handleCreatorClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (userInfo?.isUsername && userInfo.username) {
+            router.push(`/user/${userInfo.username}`);
+        } else if (walletAddress) {
+            router.push(`/user/${walletAddress}`);
         }
     };
 
+    // Show buy button only if: paid content AND user hasn't purchased AND not creator's own video
+    const showBuyButton = isPaid && !hasPurchasedState && walletAddress !== currentUserWallet;
+
     return (
-        <Card className="overflow-hidden border border-green-900 hover:border-green-700 hover:shadow-lg transition-shadow">
-            <div className="relative aspect-video">
-                {canWatch ? (
-                    <iframe
-                        className="w-full h-full rounded-lg"
-                        src={youtubeUrl.replace("watch", "embed").replace("?v=", "/")}
-                        title="YouTube video player"
-                        frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        referrerPolicy="strict-origin-when-cross-origin"
-                        allowFullScreen
-                    />
-                ) : (
-                    <>
+        <div 
+            className="group cursor-pointer"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            onClick={handleCardClick}
+        >
+            {/* Thumbnail Container */}
+            <div className="relative aspect-video bg-neutral-900 rounded-xl overflow-hidden mb-3">
+                {/* Thumbnail/Video Preview */}
+                <div className="relative w-full h-full">
+                    {canWatch ? (
                         <iframe
-                            className="w-full h-full rounded-lg"
+                            className="w-full h-full pointer-events-none"
                             src={youtubeUrl.replace("watch", "embed").replace("?v=", "/")}
                             title="YouTube video player"
                             frameBorder="0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                            referrerPolicy="strict-origin-when-cross-origin"
-                            allowFullScreen
                         />
-                        <div className="absolute inset-0 bg-black/20 backdrop-blur-xs rounded-lg flex items-center justify-center cursor-pointer" onClick={handlePlay}>
-                            <Badge variant="secondary" className="text-lg px-4 py-2  text-white border-green-800">
-                                Paid
-                            </Badge>
-                        </div>
-                    </>
-                )}
-                {isLive && (
-                    <Badge variant="destructive" className="absolute top-2 left-2">
-                        LIVE
-                    </Badge>
-                )}
-            </div>
-            <CardContent className="p-4">
-                <h3 className="font-semibold text-sm mb-2 line-clamp-2">{title}</h3>
-
-                {/* Description */}
-                {description && (
-                    <div className="mb-3">
-                        <div className="bg-gray-800 border border-gray-700 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow">
-                            <div className="flex items-start justify-between gap-2">
-                                <div className="flex-1">
-                                    <p className={`text-xs text-gray-100 leading-relaxed ${!isDescriptionExpanded ? 'line-clamp-2' : ''}`}>
-                                        {description}
-                                    </p>
-                                </div>
-                                {description.length > 100 && (
-                                    <button
-                                        onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-                                        className="shrink-0 p-1 hover:bg-gray-700 rounded transition-colors"
-                                    >
-                                        {isDescriptionExpanded ? (
-                                            <ChevronUp className="w-3 h-3 text-gray-200" />
-                                        ) : (
-                                            <ChevronDown className="w-3 h-3 text-gray-200" />
-                                        )}
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* User Info */}
-                {userInfo && (
-                    <div className="mb-2">
-                        <button
-                            onClick={() => {
-                                if (userInfo.isUsername && userInfo.username) {
-                                    router.push(`/user/${userInfo.username}`);
-                                } else {
-                                    router.push(`/user/${walletAddress}`);
-                                }
-                            }}
-                            className="text-xs font-mono bg-blue-100 text-blue-800 px-2 py-1 rounded border border-blue-200 hover:bg-blue-200 cursor-pointer transition-colors"
-                        >
-                            By: {userInfo.displayName}
-                        </button>
-                    </div>
-                )}
-
-                {/* Created Date */}
-                {createdAt && (
-                    <div className="mb-2">
-                        <div className="flex items-center gap-2 text-xs text-gray-300">
-                            <Calendar className="w-3 h-3" />
-                            <span>Created: {formatDate(createdAt)}</span>
-                        </div>
-                    </div>
-                )}
-
-                {/* Price and Action Button */}
-                <div className="flex items-center justify-between gap-2">
-                    {isPaid ? (
-                        <>
-                            <Badge variant="outline" className="text-green-600 border-green-600">
-                                Paid
-                            </Badge>
-                            {canWatch ? (
-                                <Badge variant="outline" className="text-green-600 border-green-600">
-                                    {hasPurchasedState ? 'Purchased' : 'Your Video'}
-                                </Badge>
-                            ) : (
-                                <PaymentDialog
-                                    videoId={id}
-                                    videoTitle={title}
-                                    solPrice={solPrice}
-                                    creatorWalletAddress={walletAddress || ''}
-                                    onPaymentSuccess={handlePaymentSuccess}
-                                />
-                            )}
-                        </>
                     ) : (
                         <>
-                            <Badge variant="outline" className="text-green-600 border-green-600">
-                                FREE
-                            </Badge>
-                            <Button
-                                size="sm"
-                                onClick={() => window.open(youtubeUrl, '_blank')}
-                                className="border border-blue-500 hover:border-blue-600 bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-roboto font-bold px-3 py-1 rounded text-xs cursor-pointer"
-                            >
-                                Open in YouTube
-                            </Button>
+                            <iframe
+                                className="w-full h-full pointer-events-none"
+                                src={youtubeUrl.replace("watch", "embed").replace("?v=", "/")}
+                                title="YouTube video player"
+                                frameBorder="0"
+                            />
+                            {/* Paid Overlay - Blur effect */}
+                            <div className="absolute inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center">
+                                <div className="text-center">
+                                    <div className="w-16 h-16 bg-neutral-800/80 rounded-full flex items-center justify-center mb-3 mx-auto">
+                                        <Wallet className="w-8 h-8 text-green-500" />
+                                    </div>
+                                    <p className="text-white font-semibold text-sm mb-1">Paid Content</p>
+                                    <p className="text-green-400 text-lg font-bold">{solPrice} SOL</p>
+                                </div>
+                            </div>
                         </>
                     )}
+
+                    {/* LIVE Badge */}
+                    {isLive && (
+                        <div className="absolute top-2 left-2 px-2 py-1 bg-red-600 rounded text-xs font-bold flex items-center gap-1">
+                            <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+                            LIVE
+                        </div>
+                    )}
+
+                    {/* Paid Badge */}
+                    {isPaid && !isLive && (
+                        <div className="absolute top-2 right-2 px-2 py-1 bg-green-600/90 backdrop-blur-sm rounded text-xs font-bold">
+                            {solPrice} SOL
+                        </div>
+                    )}
+
+                    {/* Purchased Badge */}
+                    {isPaid && hasPurchasedState && (
+                        <div className="absolute bottom-2 right-2 px-2 py-1 bg-green-600/90 backdrop-blur-sm rounded text-xs font-bold">
+                            ✓ Purchased
+                        </div>
+                    )}
+
+                    {/* Your Video Badge (for creator's own videos) */}
+                    {isPaid && walletAddress === currentUserWallet && (
+                        <div className="absolute bottom-2 left-2 px-2 py-1 bg-blue-600/90 backdrop-blur-sm rounded text-xs font-bold">
+                            Your Video
+                        </div>
+                    )}
+
+                    {/* Hover Overlay */}
+                    {isHovered && canWatch && (
+                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center transition-opacity">
+                            <div className="w-12 h-12 bg-black/60 rounded-full flex items-center justify-center">
+                                <Play className="w-6 h-6 text-white ml-1" />
+                            </div>
+                        </div>
+                    )}
                 </div>
-            </CardContent>
-        </Card>
+            </div>
+
+            {/* Video Info */}
+            <div className="flex gap-3">
+                {/* Creator Avatar */}
+                <div 
+                    className="w-9 h-9 rounded-full bg-neutral-800 border border-green-500/50 flex items-center justify-center overflow-hidden flex-shrink-0 cursor-pointer hover:border-green-500 transition"
+                    onClick={handleCreatorClick}
+                >
+                    {userInfo?.avatarUrl ? (
+                        <img src={userInfo.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white font-bold text-sm">
+                            {userInfo?.displayName?.[0]?.toUpperCase() || 'U'}
+                        </div>
+                    )}
+                </div>
+
+                {/* Video Details */}
+                <div className="flex-1 min-w-0">
+                    {/* Title */}
+                    <h3 className="font-semibold text-sm leading-tight line-clamp-2 mb-1 group-hover:text-neutral-200 transition">
+                        {title}
+                    </h3>
+
+                    {/* Creator Name */}
+                    <p 
+                        className="text-xs text-neutral-400 hover:text-neutral-300 cursor-pointer mb-1"
+                        onClick={handleCreatorClick}
+                    >
+                        {userInfo?.displayName || 'Unknown Creator'}
+                    </p>
+
+                    {/* Date */}
+                    {createdAt && (
+                        <p className="text-xs text-neutral-400">
+                            {formatDate(createdAt)}
+                        </p>
+                    )}
+
+                    {/* Buy Button - Only show for unpurchased paid content */}
+                    {showBuyButton && (
+                        <div className="mt-2" onClick={(e) => e.stopPropagation()}>
+                            <PaymentDialog
+                                videoId={id}
+                                videoTitle={title}
+                                solPrice={solPrice}
+                                creatorWalletAddress={walletAddress || ''}
+                                onPaymentSuccess={handlePaymentSuccess}
+                            />
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
     );
 };

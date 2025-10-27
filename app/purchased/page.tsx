@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useWallet } from '@/app/contexts/WalletContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
+import { Card, CardContent } from '@/app/components/ui/card';
 import { Badge } from '@/app/components/ui/badge';
 import { Button } from '@/app/components/ui/button';
-import { Loader2, ShoppingBag, Calendar, Wallet, Play, Home } from 'lucide-react';
+import { Loader2, ShoppingBag, Calendar, Wallet, Play, Home, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { PhantomWalletButton } from '@/app/components/PhantomWalletButton';
 import { CreateVideoButton } from '@/app/components/CreateVideoButton';
 import { useRouter } from 'next/navigation';
@@ -74,13 +74,17 @@ export default function PurchasedVideosPage() {
     };
 
     const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffTime = Math.abs(now.getTime() - date.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 0) return 'Today';
+        if (diffDays === 1) return 'Yesterday';
+        if (diffDays < 7) return `${diffDays} days ago`;
+        if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+        if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
+        return `${Math.floor(diffDays / 365)} years ago`;
     };
 
     const formatAddress = (address: string) => {
@@ -89,8 +93,7 @@ export default function PurchasedVideosPage() {
 
     const formatSolAmount = (lamports: string) => {
         const amount = parseFloat(lamports) / 1e9;
-        // Remove trailing zeros and show original precision
-        return amount.toString();
+        return amount;
     };
 
     const getEmbedUrl = (youtubeUrl: string) => {
@@ -99,36 +102,33 @@ export default function PurchasedVideosPage() {
 
     if (!walletAddress) {
         return (
-            <div className="min-h-screen">
-                <div className="border-b border-0 border-green-900 sticky backdrop-blur">
-                    <div className="w-full px-4 py-4 flex justify-between items-center">
-                        <div className="flex items-center gap-3">
-                            <Image
-                                src="/Galaxie1.png"
-                                alt="Galaxie Logo"
-                                width={40}
-                                height={40}
-                                className="rounded-lg"
-                            />
-                            <h1 className="text-base font-roboto font-bold md:text-xl">Galaxie</h1>
+            <div className="min-h-screen bg-neutral-950 text-white">
+                <header className="sticky top-0 z-50 bg-neutral-950 border-b border-neutral-800">
+                    <div className="px-4 py-3 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <Button variant="ghost" size="icon" onClick={() => router.push('/')}>
+                                <ArrowLeft className="w-5 h-5" />
+                            </Button>
+                            <div className="flex items-center gap-3">
+                                <Image src="/Galaxie1.png" alt="Galaxie Logo" width={36} height={36} className="rounded-lg" />
+                                <span className="font-bold text-lg hidden sm:block">Galaxie</span>
+                            </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <PhantomWalletButton />
+                    </div>
+                </header>
+                <div className="max-w-[1800px] mx-auto px-4 py-20">
+                    <div className="flex items-center justify-center">
+                        <div className="text-center max-w-md">
+                            <div className="w-20 h-20 bg-neutral-900 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <ShoppingBag className="w-10 h-10 text-neutral-600" />
+                            </div>
+                            <h3 className="text-2xl font-bold mb-3">Connect Your Wallet</h3>
+                            <p className="text-neutral-400 mb-6">
+                                Please connect your wallet to view your purchased videos
+                            </p>
                             <PhantomWalletButton />
                         </div>
-                    </div>
-                </div>
-                <div className="container mx-auto px-4 py-8">
-                    <div className="flex items-center justify-center min-h-[400px]">
-                        <Card className="w-full max-w-md">
-                            <CardContent className="flex flex-col items-center justify-center py-8">
-                                <ShoppingBag className="w-16 h-16 text-gray-400 mb-4" />
-                                <h3 className="text-xl font-semibold text-gray-700 mb-2">Connect Your Wallet</h3>
-                                <p className="text-gray-500 text-center mb-6">
-                                    Please connect your wallet to view your purchased videos
-                                </p>
-                                <PhantomWalletButton />
-                            </CardContent>
-                        </Card>
                     </div>
                 </div>
             </div>
@@ -137,27 +137,28 @@ export default function PurchasedVideosPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen">
-                <div className="border-b border-0 border-green-900 sticky backdrop-blur">
-                    <div className="w-full px-4 py-4 flex justify-between items-center">
-                        <div className="flex items-center gap-3">
-                            <Image
-                                src="/Galaxie1.png"
-                                alt="Galaxie Logo"
-                                width={40}
-                                height={40}
-                                className="rounded-lg"
-                            />
-                            <h1 className="text-base font-roboto font-bold md:text-xl">Galaxie</h1>
+            <div className="min-h-screen bg-neutral-950 text-white">
+                <header className="sticky top-0 z-50 bg-neutral-950 border-b border-neutral-800">
+                    <div className="px-4 py-3 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <Button variant="ghost" size="icon" onClick={() => router.push('/')}>
+                                <ArrowLeft className="w-5 h-5" />
+                            </Button>
+                            <div className="flex items-center gap-3">
+                                <Image src="/Galaxie1.png" alt="Galaxie Logo" width={36} height={36} className="rounded-lg" />
+                                <span className="font-bold text-lg hidden sm:block">Galaxie</span>
+                            </div>
                         </div>
                         <div className="flex items-center gap-2">
+                            {walletAddress && <CreateVideoButton />}
                             <PhantomWalletButton />
                         </div>
                     </div>
-                </div>
-                <div className="container mx-auto px-4 py-8">
-                    <div className="flex items-center justify-center min-h-[400px]">
-                        <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+                </header>
+                <div className="flex items-center justify-center min-h-[400px]">
+                    <div className="text-center">
+                        <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                        <p className="text-neutral-400">Loading your purchased videos...</p>
                     </div>
                 </div>
             </div>
@@ -166,36 +167,36 @@ export default function PurchasedVideosPage() {
 
     if (error) {
         return (
-            <div className="min-h-screen">
-                <div className="border-b border-0 border-green-900 sticky backdrop-blur">
-                    <div className="w-full px-4 py-4 flex justify-between items-center">
-                        <div className="flex items-center gap-3">
-                            <Image
-                                src="/Galaxie1.png"
-                                alt="Galaxie Logo"
-                                width={40}
-                                height={40}
-                                className="rounded-lg"
-                            />
-                            <h1 className="text-base font-roboto font-bold md:text-xl">Galaxie</h1>
+            <div className="min-h-screen bg-neutral-950 text-white">
+                <header className="sticky top-0 z-50 bg-neutral-950 border-b border-neutral-800">
+                    <div className="px-4 py-3 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <Button variant="ghost" size="icon" onClick={() => router.push('/')}>
+                                <ArrowLeft className="w-5 h-5" />
+                            </Button>
+                            <div className="flex items-center gap-3">
+                                <Image src="/Galaxie1.png" alt="Galaxie Logo" width={36} height={36} className="rounded-lg" />
+                                <span className="font-bold text-lg hidden sm:block">Galaxie</span>
+                            </div>
                         </div>
                         <div className="flex items-center gap-2">
+                            {walletAddress && <CreateVideoButton />}
                             <PhantomWalletButton />
                         </div>
                     </div>
-                </div>
-                <div className="container mx-auto px-4 py-8">
-                    <div className="flex items-center justify-center min-h-[400px]">
-                        <Card className="w-full max-w-md">
-                            <CardContent className="flex flex-col items-center justify-center py-8">
-                                <div className="text-red-500 mb-4">⚠️</div>
-                                <h3 className="text-xl font-semibold text-gray-700 mb-2">Error Loading Videos</h3>
-                                <p className="text-gray-500 text-center mb-6">{error}</p>
-                                <Button onClick={fetchPurchasedVideos} variant="outline">
-                                    Try Again
-                                </Button>
-                            </CardContent>
-                        </Card>
+                </header>
+                <div className="max-w-[1800px] mx-auto px-4 py-20">
+                    <div className="flex items-center justify-center">
+                        <div className="text-center max-w-md">
+                            <div className="w-20 h-20 bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <span className="text-4xl">⚠️</span>
+                            </div>
+                            <h3 className="text-2xl font-bold mb-3">Error Loading Videos</h3>
+                            <p className="text-neutral-400 mb-6">{error}</p>
+                            <Button onClick={fetchPurchasedVideos} className="bg-green-600 hover:bg-green-700">
+                                Try Again
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -203,135 +204,137 @@ export default function PurchasedVideosPage() {
     }
 
     return (
-        <div className="min-h-screen">
-            <div className="border-b border-0 border-green-900 sticky backdrop-blur">
-                <div className="w-full px-4 py-4 flex justify-between items-center">
-                    <div className="flex items-center gap-3">
-                        <Image
-                            src="/Galaxie1.png"
-                            alt="Galaxie Logo"
-                            width={40}
-                            height={40}
-                            className="rounded-lg"
-                        />
-                        <h1 className="text-base font-roboto font-bold md:text-xl">Galaxie</h1>
+        <div className="min-h-screen bg-neutral-950 text-white">
+            {/* Header */}
+            <header className="sticky top-0 z-50 bg-neutral-950 border-b border-neutral-800">
+                <div className="px-4 py-3 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <Button variant="ghost" size="icon" onClick={() => router.push('/')} className="hover:bg-neutral-800">
+                            <ArrowLeft className="w-5 h-5" />
+                        </Button>
+                        <div className="flex items-center gap-3">
+                            <Image src="/Galaxie1.png" alt="Galaxie Logo" width={36} height={36} className="rounded-lg" />
+                            <span className="font-bold text-lg hidden sm:block">Galaxie</span>
+                        </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Button
-                            onClick={() => router.push('/')}
-                            size="sm"
-                            className="flex items-center gap-2 cursor-pointer"
-                        >
-                            <Home className="w-4 h-4 cursor-pointer" />
+                        <Button variant="ghost" size="icon" onClick={() => router.push('/')} className="hover:bg-neutral-800">
+                            <Home className="w-5 h-5" />
                         </Button>
                         {walletAddress && <CreateVideoButton />}
                         <PhantomWalletButton />
                     </div>
                 </div>
-            </div>
+            </header>
 
-            <div className="container mx-auto px-4 py-8">
+            {/* Main Content */}
+            <div className="max-w-[1800px] mx-auto px-4 py-6">
+                {/* Page Header */}
                 <div className="mb-8">
-                    <h2 className="text-2xl font-bold text-green-500 mb-2">Purchased Videos</h2>
-                    <p className="text-green-600">Your collection of purchased videos</p>
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
+                            <ShoppingBag className="w-5 h-5 text-white" />
+                        </div>
+                        <h1 className="text-3xl font-bold">Purchased Videos</h1>
+                    </div>
+                    <p className="text-neutral-400 ml-13">
+                        {purchases.length > 0 
+                            ? `${purchases.length} video${purchases.length === 1 ? '' : 's'} in your library`
+                            : 'Your collection of purchased videos'
+                        }
+                    </p>
                 </div>
 
+                {/* Content */}
                 {purchases.length === 0 ? (
-                    <div className="flex items-center justify-center min-h-[400px]">
-                        <Card className="border border-green-800 w-full max-w-md">
-                            <CardContent className="flex flex-col items-center justify-center py-8">
-                                <ShoppingBag className="w-16 h-16 text-green-700 mb-4" />
-                                <h3 className="text-xl font-semibold text-gray-300 mb-2">No Purchased Videos</h3>
-                                <p className="text-gray-400 text-center mb-6">
-                                    You haven't purchased any videos yet. Start exploring and buying videos!
-                                </p>
-                                <Button onClick={() => router.push('/')} variant="outline" className="cursor-pointer border border-green-800 hover:bg-green-800">
-                                    Browse Videos
-                                </Button>
-                            </CardContent>
-                        </Card>
+                    <div className="flex items-center justify-center py-20">
+                        <div className="text-center max-w-lg">
+                            <div className="w-20 h-20 bg-gradient-to-br from-green-900 to-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <ShoppingBag className="w-10 h-10 text-white" />
+                            </div>
+                            <h3 className="text-2xl font-bold mb-3">No Purchased Videos Yet</h3>
+                            <p className="text-neutral-400 mb-6">
+                                Start exploring and purchasing videos to build your collection!
+                            </p>
+                            <Button 
+                                onClick={() => router.push('/')} 
+                                className="bg-green-600 hover:bg-green-700"
+                            >
+                                Browse Videos
+                            </Button>
+                        </div>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pt-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                         {purchases.map((purchase) => (
-                            <Card key={purchase.id} className="overflow-hidden border border-green-900 hover:border-green-700 hover:shadow-lg transition-shadow">
-                                <div className="relative aspect-video">
+                            <div
+                                key={purchase.id}
+                                className="group cursor-pointer"
+                                onClick={() => router.push(`/video/${purchase.video_id}`)}
+                            >
+                                {/* Thumbnail */}
+                                <div className="relative aspect-video bg-neutral-900 rounded-xl overflow-hidden mb-3">
                                     <iframe
-                                        className="w-full h-full rounded-lg"
+                                        className="w-full h-full pointer-events-none"
                                         src={getEmbedUrl(purchase.video.youtube_url)}
                                         title="YouTube video player"
                                         frameBorder="0"
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                        referrerPolicy="strict-origin-when-cross-origin"
-                                        allowFullScreen
                                     />
-                                    <div className="absolute top-2 right-2">
-                                        <Badge variant="outline" className="text-green-600 border-green-600">
-                                            <Play className="w-3 h-3 mr-1" />
-                                            Purchased
-                                        </Badge>
+                                    
+                                    {/* Purchased Badge */}
+                                    <div className="absolute top-2 right-2 px-2 py-1 bg-green-600/90 backdrop-blur-sm rounded text-xs font-bold flex items-center gap-1">
+                                        <CheckCircle2 className="w-3 h-3" />
+                                        Purchased
+                                    </div>
+
+                                    {/* Hover Overlay */}
+                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 flex items-center justify-center transition-all">
+                                        <div className="w-12 h-12 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Play className="w-6 h-6 text-white ml-1" />
+                                        </div>
                                     </div>
                                 </div>
-                                <CardContent className="p-4">
-                                    <div className="mb-2">
-                                        <Badge variant="outline" className="text-green-600 border-green-600 mb-2">
-                                            {purchase.status === 'completed' ? 'Completed' : purchase.status}
-                                        </Badge>
+
+                                {/* Video Info */}
+                                <div className="flex gap-3">
+                                    {/* Creator Avatar Placeholder */}
+                                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm">
+                                        {purchase.video.title[0]?.toUpperCase() || 'V'}
                                     </div>
-                                    <h3 className="font-semibold text-sm mb-2 line-clamp-2">{purchase.video.title}</h3>
 
-                                    {/* Description */}
-                                    {purchase.video.description && (
-                                        <div className="mb-3">
-                                            <div className="bg-gray-800 border border-gray-700 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow">
-                                                <p className="text-xs text-gray-100 leading-relaxed line-clamp-2">
-                                                    {purchase.video.description}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    )}
+                                    {/* Details */}
+                                    <div className="flex-1 min-w-0">
+                                        {/* Title */}
+                                        <h3 className="font-semibold text-sm leading-tight line-clamp-2 mb-1 group-hover:text-neutral-200 transition">
+                                            {purchase.video.title}
+                                        </h3>
 
-                                    {/* Purchase Details */}
-                                    <div className="space-y-2 text-xs mb-3">
-                                        <div className="flex justify-between">
-                                            <span className="text-gray-300">Amount Paid:</span>
-                                            <span className="text-gray-100 font-semibold">
+                                        {/* Purchase Info */}
+                                        <div className="flex items-center gap-2 text-xs text-neutral-400 mb-1">
+                                            <span className="font-medium text-green-400">
                                                 {formatSolAmount(purchase.amount_paid)} SOL
                                             </span>
+                                            <span>•</span>
+                                            <span>{formatDate(purchase.created_at)}</span>
                                         </div>
-                                        {/* {parseFloat(purchase.platform_fee) > 0 && (
-                                            <div className="flex justify-between">
-                                                <span className="text-gray-300">Platform Fee:</span>
-                                                <span className="text-gray-100">
-                                                    {formatSolAmount(purchase.platform_fee)} SOL
-                                                </span>
+
+                                        {/* Transaction */}
+                                        <div className="flex items-center gap-1 text-xs text-neutral-500">
+                                            <Wallet className="w-3 h-3" />
+                                            <span className="truncate">{formatAddress(purchase.transaction_signature)}</span>
+                                        </div>
+
+                                        {/* Status Badge */}
+                                        {purchase.status === 'completed' && (
+                                            <div className="mt-2">
+                                                <Badge className="bg-green-900/30 text-green-400 border-green-700 text-xs">
+                                                    Completed
+                                                </Badge>
                                             </div>
                                         )}
-                                        <div className="flex justify-between">
-                                            <span className="text-gray-300">Creator Payout:</span>
-                                            <span className="text-gray-100">
-                                                {formatSolAmount(purchase.creator_payout)} SOL
-                                            </span>
-                                        </div> */}
                                     </div>
-
-                                    {/* Transaction Info */}
-                                    <div className="space-y-1 text-xs">
-                                        <div className="flex items-center gap-2">
-                                            <Calendar className="w-3 h-3 text-gray-400" />
-                                            <span className="text-gray-400">
-                                                {formatDate(purchase.created_at)}
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <Wallet className="w-3 h-3 text-gray-400" />
-                                            <span className="text-gray-400 break-all">
-                                                {formatAddress(purchase.transaction_signature)}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                                </div>
+                            </div>
                         ))}
                     </div>
                 )}
